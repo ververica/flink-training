@@ -85,6 +85,11 @@ allprojects {
 }
 
 subprojects {
+    if (project == project(":troubleshooting") || project == project(":troubleshooting:state-migration")) {
+        // this is just an additional grouping layer, not a project!
+        return
+    }
+
     apply plugin: 'java'
     if (project.properties['org.gradle.project.enable_scala'].trim() == 'true') {
         apply plugin: 'scala'
@@ -134,8 +139,10 @@ subprojects {
 
         // allows using Flink's web UI when running in the IDE:
         shadow "org.apache.flink:flink-runtime-web_${scalaBinaryVersion}:${flinkVersion}"
+        // allow using RocksDB when running in the IDE:
+        shadow "org.apache.flink:flink-statebackend-rocksdb_${scalaBinaryVersion}:${flinkVersion}"
 
-        if (project != project(":common")) {
+        if (project != project(":common") && !project.path.startsWith(":troubleshooting")) {
             implementation project(path: ':common')
             testImplementation(project(":common")) {
                 capabilities { requireCapability("$group:common-test") }
