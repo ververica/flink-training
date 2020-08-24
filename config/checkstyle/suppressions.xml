@@ -23,6 +23,14 @@ under the License.
 		"https://checkstyle.org/dtds/suppressions_1_2.dtd">
 
 <suppressions>
+	<!-- POJOs -->
+	<suppress
+		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]common[/\\](Measurement|WindowedMeasurements|FakeKafkaRecord).java"
+		checks="MissingJavadocMethod"/>
+	<suppress
+		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]solutions[/\\](SimpleMeasurement).java"
+		checks="MissingJavadocMethod"/>
+
 	<suppress
 			files="(.*)test[/\\](.*)"
 			checks="MissingJavadocMethod"/>

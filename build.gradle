@@ -20,9 +20,14 @@ plugins {
 }
 
 subprojects {
+    if (project == project(":troubleshooting")) {
+        // this is just an additional grouping layer, not a project!
+        return
+    }
+
     apply plugin: 'java'
     apply plugin: 'scala' // optional; uncomment if needed
-    if (project != project(":common")) {
+    if (project != project(":common") && project != project(":troubleshooting:common")) {
         apply plugin: 'application'
     }
     apply plugin: 'com.github.johnrengelman.shadow'
@@ -38,6 +43,7 @@ subprojects {
         javaVersion = '1.8'
         flinkVersion = '1.11.0'
         scalaBinaryVersion = '2.12'
+        jacksonVersion = '2.11.2'
         slf4jVersion = '1.7.15'
         log4jVersion = '1.2.17'
         junitVersion = '4.12'
