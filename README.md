@@ -76,8 +76,8 @@ This `flink-training` repository contains exercises, tests, and reference soluti
 Clone the `flink-training` repository from GitHub, navigate into the project repository, and build it:
 
 ```bash
-git clone https://github.com/apache/flink-training.git
-cd flink-training
+git clone https://github.com/ververica/flink-training.git ververica-flink-training
+cd ververica-flink-training
 ./gradlew test shadowJar
 ```
 
