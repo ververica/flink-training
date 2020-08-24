@@ -30,6 +30,12 @@ under the License.
 	<suppress
 		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]solutions[/\\](SimpleMeasurement).java"
 		checks="MissingJavadocMethod"/>
+	<suppress
+		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]provided[/\\](ExtendedMeasurement).java"
+		checks="MissingJavadocMethod"/>
+	<suppress
+		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]solutions[/\\]immutable[/\\](ExtendedMeasurement|Location|MeasurementValue|Sensor).java"
+		checks="MissingJavadocMethod"/>
 
 	<suppress
 			files="(.*)test[/\\](.*)"
