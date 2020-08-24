@@ -1,0 +1,16 @@
+ext.javaExerciseClassName = 'com.ververica.flink.training.exercises.ExternalEnrichmentJob'
+
+apply plugin: 'application'
+
+mainClassName = ext.javaExerciseClassName
+
+dependencies {
+    implementation project(path: ':troubleshooting:common')
+}
+
+sourceSets {
+    main.java.srcDirs += 'src/provided/java'
+    tasks.withType(ScalaCompile) {
+        main.scala.srcDirs += 'src/provided/scala'
+    }
+}

@@ -1,0 +1,20 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "com.commercehub.gradle.plugin:gradle-avro-plugin:0.16.0"
+    }
+}
+apply plugin: "com.commercehub.gradle.plugin.avro"
+apply plugin: 'application'
+
+ext.javaExerciseClassName = 'com.ververica.flink.training.exercises.avro.StateMigrationJob'
+
+mainClassName = ext.javaExerciseClassName
+
+dependencies {
+    implementation "org.apache.flink:flink-avro:${flinkVersion}"
+
+    implementation project(path: ':troubleshooting:state-migration:common')
+}

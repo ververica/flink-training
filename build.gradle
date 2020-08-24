@@ -42,6 +42,11 @@ allprojects {
 }
 
 subprojects {
+    if (project == project(":troubleshooting") || project == project(":troubleshooting:state-migration")) {
+        // this is just an additional grouping layer, not a project!
+        return
+    }
+
     apply plugin: 'java'
     if (project.properties['org.gradle.project.enable_scala'].trim() == 'true') {
         apply plugin: 'scala'
@@ -89,7 +94,7 @@ subprojects {
         shadow "org.apache.flink:flink-streaming-java_${scalaBinaryVersion}:${flinkVersion}"
         shadow "org.apache.flink:flink-streaming-scala_${scalaBinaryVersion}:${flinkVersion}"
 
-        if (project != project(":common")) {
+        if (project != project(":common") && !project.path.startsWith(":troubleshooting")) {
             implementation project(path: ':common')
             testImplementation(project(":common")) {
                 capabilities { requireCapability("$group:common-test") }

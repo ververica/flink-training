@@ -1,0 +1,9 @@
+ext.javaExerciseClassName = 'com.ververica.flink.training.exercises.TroubledStreamingJob'
+
+apply plugin: 'application'
+
+mainClassName = ext.javaExerciseClassName
+
+dependencies {
+    implementation project(path: ':troubleshooting:common')
+}

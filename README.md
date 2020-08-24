@@ -238,6 +238,7 @@ For Java/Scala exercises and solutions, we provide special tasks that can be lis
 1. [`ProcessFunction` and Timers (Long Ride Alerts)](long-ride-alerts)
    - [Exercise](long-ride-alerts/README.md)
    - [Discussion](long-ride-alerts/DISCUSSION.md)
+1. [Tuning & Troubleshooting Labs](troubleshooting)
 
 ## Contribute
 
