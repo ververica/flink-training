@@ -82,8 +82,8 @@ Linux、OS X 和 Windows 均可作为 Flink 程序和本地执行的开发环境
 从 GitHub 克隆出 `flink-training` 仓库，导航到本地项目仓库并构建它：
 
 ```bash
-git clone https://github.com/apache/flink-training.git
-cd flink-training
+git clone https://github.com/ververica/flink-training.git ververica-flink-training
+cd ververica-flink-training
 ./gradlew test shadowJar
 ```
 
