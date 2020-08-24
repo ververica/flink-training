@@ -1,0 +1,11 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'com.ververica'
+
+// common set of dependencies
+dependencies {
+    flinkShadowJar "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    flinkShadowJar "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+}
