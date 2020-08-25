@@ -66,6 +66,11 @@ public class EnvironmentUtils {
 			));
 		}
 
+		final int parallelism = parameters.getInt("parallelism", -1);
+		if (parallelism > 0) {
+			env.setParallelism(parallelism);
+		}
+
 		env.getConfig().setGlobalJobParameters(parameters);
 
 		return env;

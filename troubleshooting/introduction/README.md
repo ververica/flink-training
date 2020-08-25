@@ -27,6 +27,8 @@ the local mode via the `--local` program argument and set the port the Web UI is
 12:11:04.062 [main] INFO o.a.f.r.d.DispatcherRestEndpoint - Web frontend listening at http://localhost:8081.
 ```
 
+You can also specify the parallelism via `--parallelism <number>` if needed (may be valuable in local setups).
+
 ### The Flink Job
 
 This simple Flink job reads measurement data from a Kafka topic with eight partitions. For the purpose of this training,
