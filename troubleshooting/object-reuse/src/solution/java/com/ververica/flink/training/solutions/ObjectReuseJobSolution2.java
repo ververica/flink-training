@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.ververica.flink.training.exercises.ObjectReuseJobUtils.createConfiguredEnvironment;
+import static com.ververica.flink.training.common.EnvironmentUtils.createConfiguredEnvironment;
 
 /**
  * Object reuse solution that builds on top of {@link ObjectReuseJobSolution1} and uses immutable
@@ -48,9 +48,7 @@ public class ObjectReuseJobSolution2 {
 	public static void main(String[] args) throws Exception {
 		ParameterTool parameters = ParameterTool.fromArgs(args);
 
-		final boolean local = parameters.getBoolean("local", false);
-
-		StreamExecutionEnvironment env = createConfiguredEnvironment(parameters, local);
+		StreamExecutionEnvironment env = createConfiguredEnvironment(parameters);
 
 		final boolean objectReuse = parameters.getBoolean("objectReuse", false);
 		if (objectReuse) {
