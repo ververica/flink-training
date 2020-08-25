@@ -1,4 +1,4 @@
-package com.ververica.flink.training.exercises;
+package com.ververica.flink.training.common;
 
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.common.time.Time;
@@ -17,8 +17,10 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.concurrent.TimeUnit;
 
-public class TroubledStreamingJobUtils {
-
+/**
+ * Common functionality to set up execution environments for the troubleshooting training.
+ */
+public class EnvironmentUtils {
 	/**
 	 * Creates a streaming environment with a few pre-configured settings based on command-line
 	 * parameters.
@@ -27,8 +29,10 @@ public class TroubledStreamingJobUtils {
 	 * @throws URISyntaxException if <code>fsStatePath</code> is not a valid URI
 	 */
 	public static StreamExecutionEnvironment createConfiguredEnvironment(
-			final ParameterTool parameters, final boolean local) throws
+			final ParameterTool parameters) throws
 			IOException, URISyntaxException {
+		final boolean local = isLocal(parameters);
+
 		StreamExecutionEnvironment env;
 		if (local) {
 			env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(new Configuration());
@@ -55,5 +59,12 @@ public class TroubledStreamingJobUtils {
 				Time.of(15, TimeUnit.SECONDS) // delay
 		));
 		return env;
+	}
+
+	/**
+	 * Checks whether the environment should be set up in local mode (with Web UI,...).
+	 */
+	public static boolean isLocal(ParameterTool parameters) {
+		return parameters.getBoolean("local", false);
 	}
 }

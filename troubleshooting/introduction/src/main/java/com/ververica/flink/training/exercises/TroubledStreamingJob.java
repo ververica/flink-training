@@ -26,7 +26,8 @@ import com.ververica.flink.training.common.WindowedMeasurements;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import static com.ververica.flink.training.exercises.TroubledStreamingJobUtils.createConfiguredEnvironment;
+import static com.ververica.flink.training.common.EnvironmentUtils.createConfiguredEnvironment;
+import static com.ververica.flink.training.common.EnvironmentUtils.isLocal;
 
 /**
  * Troubled streaming job exercise.
@@ -41,9 +42,7 @@ public class TroubledStreamingJob {
 	public static void main(String[] args) throws Exception {
 		ParameterTool parameters = ParameterTool.fromArgs(args);
 
-		final boolean local = parameters.getBoolean("local", false);
-
-		StreamExecutionEnvironment env = createConfiguredEnvironment(parameters, local);
+		StreamExecutionEnvironment env = createConfiguredEnvironment(parameters);
 
 		//Time Characteristics
 		env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
@@ -76,7 +75,7 @@ public class TroubledStreamingJob {
 				.name("WindowedAggregationPerLocation")
 				.uid("WindowedAggregationPerLocation");
 
-		if (local) {
+		if (isLocal(parameters)) {
 			aggregatedPerLocation.print()
 					.name("NormalOutput")
 					.uid("NormalOutput")
