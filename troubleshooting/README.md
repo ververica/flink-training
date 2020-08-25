@@ -2,6 +2,7 @@
 
 1. [Introduction (Troubled Streaming Job)](introduction)
 1. Advanced
+   1. [External Enrichment](external-enrichment)
    1. [Object Reuse](object-reuse)
 
 -----

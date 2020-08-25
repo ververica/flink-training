@@ -28,10 +28,10 @@ under the License.
 		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]common[/\\](Measurement|WindowedMeasurements|FakeKafkaRecord).java"
 		checks="MissingJavadocMethod"/>
 	<suppress
-		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]solutions[/\\](SimpleMeasurement).java"
+		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\](solutions|provided)[/\\](SimpleMeasurement).java"
 		checks="MissingJavadocMethod"/>
 	<suppress
-		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]provided[/\\](ExtendedMeasurement).java"
+		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]provided[/\\](ExtendedMeasurement|EnrichedMeasurement).java"
 		checks="MissingJavadocMethod"/>
 	<suppress
 		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]solutions[/\\]immutable[/\\](ExtendedMeasurement|Location|MeasurementValue|Sensor).java"
