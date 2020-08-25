@@ -262,6 +262,11 @@ subprojects {
     }
 
     assemble.dependsOn(shadowJar)
+
+    // add FLINK_TRAINING_LOCAL to the environment variables if run via gradle
+    tasks.matching({ task -> task instanceof JavaExec }).all {
+        environment "FLINK_TRAINING_LOCAL", "1"
+    }
 }
 
 tasks.register('printRunTasks') {
