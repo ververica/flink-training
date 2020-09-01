@@ -256,6 +256,9 @@ subprojects {
             exclude(dependency('javax.servlet:servlet-api')) // TODO: check if needed
             exclude(dependency('org.apache.httpcomponents:httpclient')) // TODO: check if needed
         }
+        if (project.parent != rootProject) {
+            archiveBaseName.set("${project.parent.name}-${project.name}")
+        }
     }
 
     assemble.dependsOn(shadowJar)
