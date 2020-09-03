@@ -23,18 +23,30 @@ under the License.
 		"https://checkstyle.org/dtds/suppressions_1_2.dtd">
 
 <suppressions>
-	<!-- POJOs -->
+	<!-- troubleshooting/common -->
 	<suppress
-		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]common[/\\](Measurement|WindowedMeasurements|FakeKafkaRecord)\.java"
+		files="(.*)troubleshooting[/\\]common[/\\](.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]common[/\\](Measurement|WindowedMeasurements|FakeKafkaRecord)\.java"
+		checks="MissingJavadocMethod"/>
+
+	<!-- troubleshooting/introduction -->
+	<suppress
+		files="(.*)troubleshooting[/\\]introduction[/\\](.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]solutions[/\\](SimpleMeasurement)\.java"
+		checks="MissingJavadocMethod"/>
+
+	<!-- troubleshooting/external-enrichment -->
+	<suppress
+		files="(.*)troubleshooting[/\\]external-enrichment[/\\](.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]provided[/\\](SimpleMeasurement)\.java"
 		checks="MissingJavadocMethod"/>
 	<suppress
-		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\](solutions|provided)[/\\](SimpleMeasurement)\.java"
+		files="(.*)troubleshooting[/\\]external-enrichment[/\\](.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]provided[/\\](EnrichedMeasurement)\.java"
+		checks="MissingJavadocMethod"/>
+
+	<!-- troubleshooting/object-reuse -->
+	<suppress
+		files="(.*)troubleshooting[/\\]object-reuse[/\\](.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]provided[/\\](ExtendedMeasurement)\.java"
 		checks="MissingJavadocMethod"/>
 	<suppress
-		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]provided[/\\](ExtendedMeasurement|EnrichedMeasurement)\.java"
-		checks="MissingJavadocMethod"/>
-	<suppress
-		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]solutions[/\\]immutable[/\\](ExtendedMeasurement|Location|MeasurementValue|Sensor)\.java"
+		files="(.*)troubleshooting[/\\]object-reuse[/\\](.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]solutions[/\\]immutable[/\\](ExtendedMeasurement|Location|MeasurementValue|Sensor)\.java"
 		checks="MissingJavadocMethod"/>
 
 	<suppress
