@@ -25,16 +25,16 @@ under the License.
 <suppressions>
 	<!-- POJOs -->
 	<suppress
-		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]common[/\\](Measurement|WindowedMeasurements|FakeKafkaRecord).java"
+		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]common[/\\](Measurement|WindowedMeasurements|FakeKafkaRecord)\.java"
 		checks="MissingJavadocMethod"/>
 	<suppress
-		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\](solutions|provided)[/\\](SimpleMeasurement).java"
+		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\](solutions|provided)[/\\](SimpleMeasurement)\.java"
 		checks="MissingJavadocMethod"/>
 	<suppress
-		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]provided[/\\](ExtendedMeasurement|EnrichedMeasurement).java"
+		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]provided[/\\](ExtendedMeasurement|EnrichedMeasurement)\.java"
 		checks="MissingJavadocMethod"/>
 	<suppress
-		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]solutions[/\\]immutable[/\\](ExtendedMeasurement|Location|MeasurementValue|Sensor).java"
+		files="(.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]solutions[/\\]immutable[/\\](ExtendedMeasurement|Location|MeasurementValue|Sensor)\.java"
 		checks="MissingJavadocMethod"/>
 
 	<suppress
