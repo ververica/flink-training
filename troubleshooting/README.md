@@ -4,6 +4,7 @@
 1. Advanced
    1. [External Enrichment](external-enrichment)
    1. [Object Reuse](object-reuse)
+   1. [State Migration](state-migration)
 
 -----
 
