@@ -5,6 +5,7 @@ import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.memory.MemoryStateBackend;
 import org.apache.flink.state.api.ExistingSavepoint;
@@ -17,13 +18,14 @@ import org.apache.flink.util.Collector;
 /**
  * Java implementation for an example using the State Processor API to read and display
  * the contents of a retained checkpoint or savepoint from RidesAndFaresSolution.
+ *
+ * <p>Required parameter:
+ *
+ * <p>--input path-to-snapshot
+ *
+ * <p>e.g., --input file:///tmp/checkpoints/3bb27ec3cedb40d19ff31c4617e54715/chk-5
  */
 public class ReadRidesAndFaresSnapshot {
-
-	/***************************************************************************************
-	 Update this path to point to a checkpoint or savepoint from RidesAndFaresSolution
-	 ***************************************************************************************/
-	public static final String PATH_TO_SNAPSHOT = "file:///tmp/checkpoints/58d523c8ae0ff19aba1053c4209d09bf/chk-1";
 
 	/**
 	 * Main method.
@@ -34,7 +36,10 @@ public class ReadRidesAndFaresSnapshot {
 		ExecutionEnvironment bEnv = ExecutionEnvironment.getExecutionEnvironment();
 		MemoryStateBackend backend = new MemoryStateBackend();
 
-		ExistingSavepoint sp = Savepoint.load(bEnv, PATH_TO_SNAPSHOT, backend);
+		ParameterTool params = ParameterTool.fromArgs(args);
+		String input = params.getRequired("input");
+
+		ExistingSavepoint sp = Savepoint.load(bEnv, input, backend);
 
 		// the uid here must match the uid used in RidesAndFaresSolution
 		DataSet<Tuple2<TaxiRide, TaxiFare>> keyedState = sp.readKeyedState("enrichment", new ReadRidesAndFares());
@@ -60,7 +65,7 @@ public class ReadRidesAndFaresSnapshot {
 				Context context,
 				Collector<Tuple2<TaxiRide, TaxiFare>> out) throws Exception {
 
-			out.collect(new Tuple2<TaxiRide, TaxiFare>(ride.value(), fare.value()));
+			out.collect(new Tuple2<>(ride.value(), fare.value()));
 		}
 	}
 }
