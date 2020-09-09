@@ -1,0 +1,18 @@
+ext.javaExerciseClassName = 'com.ververica.flink.training.exercises.ReadRidesAndFaresSnapshot'
+
+apply plugin: 'application'
+
+group = 'com.ververica'
+mainClassName = ext.javaExerciseClassName
+
+// common set of dependencies
+dependencies {
+    // --------------------------------------------------------------
+    // Compile-time dependencies that should NOT be part of the
+    // shadow jar and are provided in the lib folder of Flink
+    // --------------------------------------------------------------
+    shadow "org.apache.flink:flink-state-processor-api_${scalaBinaryVersion}:${flinkVersion}"
+
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+}
