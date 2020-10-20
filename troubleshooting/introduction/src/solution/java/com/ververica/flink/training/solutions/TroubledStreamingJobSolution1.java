@@ -164,13 +164,11 @@ public class TroubledStreamingJobSolution1 {
 			WindowedMeasurements aggregate = new WindowedMeasurements();
 			for (JsonNode record : input) {
 				double result = Double.parseDouble(record.get("value").asText());
-				aggregate.setSumPerWindow(aggregate.getSumPerWindow() + result);
-				aggregate.setEventsPerWindow(aggregate.getEventsPerWindow() + 1);
+				aggregate.addMeasurement(result);
 			}
 
 			final TimeWindow window = context.window();
-			aggregate.setWindowStart(window.getStart());
-			aggregate.setWindowEnd(window.getEnd());
+			aggregate.setWindow(window);
 			aggregate.setLocation(location);
 
 			eventTimeLag.update(System.currentTimeMillis() - window.getEnd());

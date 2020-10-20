@@ -179,8 +179,7 @@ public class CheckpointingJobSolution2 {
 			WindowedMeasurements result = new WindowedMeasurements();
 			result.setEventsPerWindow(eventsPerWindow);
 			result.setSumPerWindow(sumPerWindow);
-			result.setWindowStart(window.getStart());
-			result.setWindowEnd(window.getEnd());
+			result.setWindow(window);
 			result.setLocation(sensorId.toString());
 
 			eventTimeLag.update(System.currentTimeMillis() - window.getEnd());

@@ -1,5 +1,7 @@
 package com.ververica.flink.training.common;
 
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+
 import java.util.Objects;
 
 @SuppressWarnings({"unused", "RedundantSuppression"})
@@ -40,6 +42,11 @@ public class WindowedMeasurements {
 		this.windowEnd = windowEnd;
 	}
 
+	public void setWindow(TimeWindow window) {
+		setWindowStart(window.getStart());
+		setWindowEnd(window.getEnd());
+	}
+
 	public String getLocation() {
 		return location;
 	}
@@ -62,6 +69,15 @@ public class WindowedMeasurements {
 
 	public void setSumPerWindow(final double sumPerWindow) {
 		this.sumPerWindow = sumPerWindow;
+	}
+
+	public void addMeasurement(Measurement measurement) {
+		addMeasurement(measurement.getValue());
+	}
+
+	public void addMeasurement(double value) {
+		sumPerWindow += value;
+		++eventsPerWindow;
 	}
 
 	@Override

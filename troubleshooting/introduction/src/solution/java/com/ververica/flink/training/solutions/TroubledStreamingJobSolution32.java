@@ -214,8 +214,7 @@ public class TroubledStreamingJobSolution32 {
 				final JsonNode record,
 				final WindowedMeasurements aggregate) {
 			double result = Double.parseDouble(record.get("value").asText());
-			aggregate.setSumPerWindow(aggregate.getSumPerWindow() + result);
-			aggregate.setEventsPerWindow(aggregate.getEventsPerWindow() + 1);
+			aggregate.addMeasurement(result);
 			return aggregate;
 		}
 
@@ -254,8 +253,7 @@ public class TroubledStreamingJobSolution32 {
 			WindowedMeasurements aggregate = input.iterator().next();
 
 			final TimeWindow window = context.window();
-			aggregate.setWindowStart(window.getStart());
-			aggregate.setWindowEnd(window.getEnd());
+			aggregate.setWindow(window);
 			aggregate.setLocation(location);
 
 			eventTimeLag.update(System.currentTimeMillis() - window.getEnd());

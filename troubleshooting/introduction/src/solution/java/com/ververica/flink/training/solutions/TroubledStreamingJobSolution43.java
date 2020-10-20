@@ -219,8 +219,7 @@ public class TroubledStreamingJobSolution43 {
 				final SimpleMeasurement record,
 				final WindowedMeasurements aggregate) {
 			double result = record.getValue();
-			aggregate.setSumPerWindow(aggregate.getSumPerWindow() + result);
-			aggregate.setEventsPerWindow(aggregate.getEventsPerWindow() + 1);
+			aggregate.addMeasurement(result);
 			return aggregate;
 		}
 
@@ -259,8 +258,7 @@ public class TroubledStreamingJobSolution43 {
 			WindowedMeasurements aggregate = input.iterator().next();
 
 			final TimeWindow window = context.window();
-			aggregate.setWindowStart(window.getStart());
-			aggregate.setWindowEnd(window.getEnd());
+			aggregate.setWindow(window);
 			aggregate.setLocation(location);
 
 			eventTimeLag.update(System.currentTimeMillis() - window.getEnd());

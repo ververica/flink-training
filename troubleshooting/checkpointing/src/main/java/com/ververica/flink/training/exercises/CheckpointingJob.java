@@ -216,8 +216,7 @@ public class CheckpointingJob {
 			WindowedMeasurements aggregate = input.iterator().next();
 
 			final TimeWindow window = context.window();
-			aggregate.setWindowStart(window.getStart());
-			aggregate.setWindowEnd(window.getEnd());
+			aggregate.setWindow(window);
 			aggregate.setLocation(sensorId.toString());
 
 			eventTimeLag.update(System.currentTimeMillis() - window.getEnd());
