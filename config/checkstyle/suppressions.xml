@@ -57,6 +57,14 @@ under the License.
 		files="(.*)troubleshooting[/\\]state-migration[/\\](.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]exercises[/\\]custom[/\\](AggregatedSensorStatistics)\.java"
 		checks="MissingJavadocMethod"/>
 
+	<!-- troubleshooting/throughput -->
+	<suppress
+			files="(.*)troubleshooting[/\\]throughput[/\\](.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]exercises[/\\](WindowedMeasurementsForArea)\.java"
+			checks="MissingJavadocMethod"/>
+	<suppress
+			files="(.*)troubleshooting[/\\]throughput[/\\](.*)com[/\\]ververica[/\\]flink[/\\]training[/\\]solutions[/\\](WindowedMeasurementsForArea2)\.java"
+			checks="MissingJavadocMethod"/>
+
 	<!-- Avro-generated files -->
 	<suppress
 		files="(.*)generated-(.*)-avro-java(.*)\.java"
