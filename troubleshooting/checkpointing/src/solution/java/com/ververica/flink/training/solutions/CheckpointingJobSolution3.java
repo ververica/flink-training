@@ -180,7 +180,7 @@ public class CheckpointingJobSolution3 {
 			 * f1: the total differences summed up in the event time order
 			 * f2: the value of the previous measurement
 			 */
-			return new Tuple3<Long, Double, Double>(0L, 0.0, 0.0);
+			return new Tuple3<>(0L, 0.0, 0.0);
 		}
 
 		@Override
