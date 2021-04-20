@@ -128,9 +128,9 @@ public class CheckpointingJobSolution3 {
 			super.open(parameters);
 
 			ListStateDescriptor<Tuple2<Measurement, Long>> desc =
-					new ListStateDescriptor<Tuple2<Measurement, Long>>(
+					new ListStateDescriptor<>(
 							"events",
-							TypeInformation.of(new TypeHint<Tuple2<Measurement, Long>>(){})
+							Types.TUPLE(Types.POJO(Measurement.class), Types.LONG)
 					);
 			listState = getRuntimeContext().getListState(desc);
 		}
