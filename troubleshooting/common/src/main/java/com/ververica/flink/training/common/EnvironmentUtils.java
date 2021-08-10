@@ -12,6 +12,9 @@ import org.apache.flink.runtime.state.filesystem.FsStateBackend;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.FileUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -27,11 +30,13 @@ import static org.apache.flink.configuration.TaskManagerOptions.TASK_OFF_HEAP_ME
 
 /** Common functionality to set up execution environments for the troubleshooting training. */
 public class EnvironmentUtils {
+    public static final Logger LOG = LoggerFactory.getLogger(EnvironmentUtils.class);
+
     /**
      * Creates a streaming environment with a few pre-configured settings based on command-line
      * parameters.
      *
-     * @throws IOException if the local checkpoint directory for the file system state backend
+     * @throws IOException if the local checkpoint directory for the file system state backend*
      *     cannot be created
      * @throws URISyntaxException if <code>fsStatePath</code> is not a valid URI
      */
@@ -75,6 +80,7 @@ public class EnvironmentUtils {
             } else {
                 stateBackend = new FsStateBackend(checkpointPath);
             }
+            LOG.info("Writing checkpoints to {}", checkpointPath);
             env.setStateBackend(stateBackend);
 
             // set a restart strategy for better IDE debugging
