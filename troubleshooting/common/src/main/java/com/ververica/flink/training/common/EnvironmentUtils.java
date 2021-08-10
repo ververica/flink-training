@@ -22,6 +22,7 @@ import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.common.time.Time;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.MemorySize;
 import org.apache.flink.contrib.streaming.state.RocksDBStateBackend;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.runtime.state.StateBackend;
@@ -40,6 +41,10 @@ import java.nio.file.Files;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.flink.configuration.RestOptions.BIND_PORT;
+import static org.apache.flink.configuration.TaskManagerOptions.CPU_CORES;
+import static org.apache.flink.configuration.TaskManagerOptions.MANAGED_MEMORY_SIZE;
+import static org.apache.flink.configuration.TaskManagerOptions.TASK_HEAP_MEMORY;
+import static org.apache.flink.configuration.TaskManagerOptions.TASK_OFF_HEAP_MEMORY;
 
 /** Common functionality to set up execution environments for the troubleshooting training. */
 public class EnvironmentUtils {
@@ -70,6 +75,10 @@ public class EnvironmentUtils {
             // configure Web UI
             Configuration flinkConfig = new Configuration();
             flinkConfig.set(BIND_PORT, localMode);
+            flinkConfig.set(CPU_CORES, 4.0);
+            flinkConfig.set(TASK_HEAP_MEMORY, MemorySize.ofMebiBytes(1024));
+            flinkConfig.set(TASK_OFF_HEAP_MEMORY, MemorySize.ofMebiBytes(256));
+            flinkConfig.set(MANAGED_MEMORY_SIZE, MemorySize.ofMebiBytes(1024));
             env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(flinkConfig);
 
             // configure filesystem state backend
