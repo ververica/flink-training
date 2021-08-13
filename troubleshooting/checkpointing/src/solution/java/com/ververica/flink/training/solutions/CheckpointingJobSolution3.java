@@ -3,10 +3,9 @@ package com.ververica.flink.training.solutions;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
-import org.apache.flink.api.common.state.ListState;
-import org.apache.flink.api.common.state.ListStateDescriptor;
-import org.apache.flink.api.common.typeinfo.TypeHint;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.state.MapState;
+import org.apache.flink.api.common.state.MapStateDescriptor;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -37,6 +36,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.ververica.flink.training.common.EnvironmentUtils.createConfiguredEnvironment;
@@ -44,15 +44,18 @@ import static com.ververica.flink.training.common.EnvironmentUtils.isLocal;
 
 /**
  * Solution 3 fixes the streaming job with slow checkpointing by sorting the stream based on event time
- * then pre-aggregation
+ * then pre-aggregation.
+ *
+ * In addition, the event time timestamp is accessible in the sorting operator and not needed in the window operator
+ * anymore, this solution also change to use DataStream<Measurement> instead of DataStream<Tuple2<Measurement, Long>>
  */
 public class CheckpointingJobSolution3 {
 
-    /**
-     * Creates and starts the troubled streaming job.
+	/**
+	 * Creates and starts the troubled streaming job.
 	 *
 	 * @throws Exception if the application is misconfigured or fails during job submission
-     */
+	 */
 	public static void main(String[] args) throws Exception {
 		ParameterTool parameters = ParameterTool.fromArgs(args);
 
@@ -69,7 +72,7 @@ public class CheckpointingJobSolution3 {
 			env.getCheckpointConfig().setCheckpointTimeout(TimeUnit.MINUTES.toMillis(2));
 		}
 
-		DataStream<Tuple2<Measurement, Long>> sourceStream = env
+		DataStream<Measurement> sourceStream = env
 				.addSource(SourceUtils.createFailureFreeFakeKafkaSource())
 				.name("FakeKafkaSource")
 				.uid("FakeKafkaSource")
@@ -85,16 +88,16 @@ public class CheckpointingJobSolution3 {
 				.name("Deserialization")
 				.uid("Deserialization");
 
-		DataStream<Tuple2<Measurement, Long>> sortedStream = sourceStream
-				.keyBy(x -> x.f0.getSensorId())
+		DataStream<Measurement> sortedStream = sourceStream
+				.keyBy(Measurement::getSensorId)
 				.process(new SortMeasurementFunction())
 				.name("Sorting")
 				.uid("Sorting");
 
-		KeyedStream<Tuple2<Measurement, Long>, Integer> keyedSortedStream =
+		KeyedStream<Measurement, Integer> keyedSortedStream =
 				DataStreamUtils.reinterpretAsKeyedStream(
 						sortedStream,
-						x -> x.f0.getSensorId());
+						Measurement::getSensorId);
 
 		DataStream<WindowedMeasurements> aggregatedPerLocation = keyedSortedStream
 				.window(SlidingEventTimeWindows.of(Time.of(1, TimeUnit.MINUTES), Time.of(1, TimeUnit.SECONDS)))
@@ -119,63 +122,57 @@ public class CheckpointingJobSolution3 {
 	}
 
 	public static class SortMeasurementFunction
-			extends KeyedProcessFunction<Integer, Tuple2<Measurement, Long>, Tuple2<Measurement, Long>> {
+			extends KeyedProcessFunction<Integer, Measurement, Measurement> {
 
-		private ListState<Tuple2<Measurement, Long>> listState;
+		private MapState<Long, List<Measurement>> mapState;
 
 		@Override
 		public void open(Configuration parameters) throws Exception {
 			super.open(parameters);
 
-			ListStateDescriptor<Tuple2<Measurement, Long>> desc =
-					new ListStateDescriptor<>(
+			MapStateDescriptor<Long, List<Measurement>> desc =
+					new MapStateDescriptor<>(
 							"events",
-							Types.TUPLE(Types.POJO(Measurement.class), Types.LONG)
+							Types.LONG,
+							Types.LIST(Types.POJO(Measurement.class))
 					);
-			listState = getRuntimeContext().getListState(desc);
+			mapState = getRuntimeContext().getMapState(desc);
 		}
 
 		@Override
-		public void processElement(Tuple2<Measurement, Long> value, Context ctx,
-								   Collector<Tuple2<Measurement, Long>> out) throws Exception {
+		public void processElement(Measurement value, Context ctx, Collector<Measurement> out) throws Exception {
 			TimerService timerService = ctx.timerService();
+			Long currentTimestamp = ctx.timestamp();
 
-			if (ctx.timestamp() > timerService.currentWatermark()) {
-				listState.add(value);
-				timerService.registerEventTimeTimer(ctx.timestamp());
+			if (currentTimestamp > timerService.currentWatermark()) {
+				List<Measurement> measurementList = mapState.get(currentTimestamp);
+				if (measurementList == null) {
+					measurementList = new ArrayList<>();
+				}
+				measurementList.add(value);
+				mapState.put(currentTimestamp, measurementList);
+				timerService.registerEventTimeTimer(currentTimestamp);
 			}
 		}
 
 		@Override
 		public void onTimer(long timestamp, OnTimerContext ctx,
-							Collector<Tuple2<Measurement, Long>> out) throws Exception {
-
-			ArrayList<Tuple2<Measurement, Long>> list = new ArrayList<>();
-			listState.get().iterator().forEachRemaining(list::add);
-			list.sort(new MeasurementByTimeComparator());
-
-			Long watermark = ctx.timerService().currentWatermark();
-			int index = 0;
-			for (Tuple2<Measurement, Long> event : list) {
-				if (event != null && event.f1 <= watermark) {
-					out.collect(event);
-					index++;
-				} else {
-					break;
-				}
+							Collector<Measurement> out) throws Exception {
+			List<Measurement> measurementList = mapState.get(timestamp);
+			for (Measurement measurement : measurementList) {
+				out.collect(measurement);
 			}
-			list.subList(0, index).clear();
-			listState.update(list);
+			mapState.remove(timestamp);
 		}
 	}
 
 	public static class MeasurementWindowAggregatingFunction implements
-			AggregateFunction<Tuple2<Measurement, Long>, Tuple3<Long, Double, Double>, Tuple2<Long, Double>> {
+			AggregateFunction<Measurement, Tuple3<Long, Double, Double>, Tuple2<Long, Double>> {
 		private static final long serialVersionUID = 1;
 
 		@Override
 		public Tuple3<Long, Double, Double> createAccumulator() {
-			/**
+			/*
 			 * f0: the total number of events
 			 * f1: the total differences summed up in the event time order
 			 * f2: the value of the previous measurement
@@ -185,14 +182,14 @@ public class CheckpointingJobSolution3 {
 
 		@Override
 		public Tuple3<Long, Double, Double> add(
-				final Tuple2<Measurement, Long> record,
+				final Measurement record,
 				final Tuple3<Long, Double, Double> aggregate) {
 
 			if (aggregate.f0 > 0) {
-				aggregate.f1 += record.f0.getValue() - aggregate.f2;
+				aggregate.f1 += record.getValue() - aggregate.f2;
 			}
 			aggregate.f0++;
-			aggregate.f2 = record.f0.getValue();
+			aggregate.f2 = record.getValue();
 			return aggregate;
 		}
 
@@ -205,8 +202,8 @@ public class CheckpointingJobSolution3 {
 		public Tuple3<Long, Double, Double> merge(
 				final Tuple3<Long, Double, Double> agg1,
 				final Tuple3<Long, Double, Double> agg2) {
-			// not needed in this case
-			return null;
+			// this way of aggregation does not support merging of two aggregator
+			throw new UnsupportedOperationException();
 		}
 	}
 
@@ -214,7 +211,7 @@ public class CheckpointingJobSolution3 {
 	 * Deserializes the JSON Kafka message.
 	 */
 	public static class MeasurementDeserializer extends
-			RichFlatMapFunction<FakeKafkaRecord, Tuple2<Measurement, Long>> {
+			RichFlatMapFunction<FakeKafkaRecord, Measurement> {
 		private static final long serialVersionUID = 3L;
 
 		private Counter numInvalidRecords;
@@ -228,7 +225,7 @@ public class CheckpointingJobSolution3 {
 		}
 
 		@Override
-		public void flatMap(final FakeKafkaRecord kafkaRecord, final Collector<Tuple2<Measurement, Long>> out) {
+		public void flatMap(final FakeKafkaRecord kafkaRecord, final Collector<Measurement> out) {
 			final Measurement node;
 			try {
 				node = deserialize(kafkaRecord.getValue());
@@ -236,7 +233,7 @@ public class CheckpointingJobSolution3 {
 				numInvalidRecords.inc();
 				return;
 			}
-			out.collect(Tuple2.of(node, kafkaRecord.getTimestamp()));
+			out.collect(node);
 		}
 
 		private Measurement deserialize(final byte[] bytes) throws IOException {
