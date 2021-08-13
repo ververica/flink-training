@@ -35,7 +35,6 @@ import com.ververica.flink.training.common.WindowedMeasurements;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -122,6 +121,9 @@ public class CheckpointingJobSolution3 {
 		env.execute(CheckpointingJobSolution3.class.getSimpleName());
 	}
 
+	/**
+	 * Sort events based on the event timestamp. The events with the same timestamp are stored in a list
+	 */
 	public static class SortMeasurementFunction
 			extends KeyedProcessFunction<Integer, Measurement, Measurement> {
 
@@ -167,6 +169,9 @@ public class CheckpointingJobSolution3 {
 		}
 	}
 
+	/**
+	 * Aggregate events, with a assumption that the events are sorted on a per-key basis.
+	 */
 	public static class MeasurementWindowAggregatingFunction implements
 			AggregateFunction<Measurement, Tuple3<Long, Double, Double>, Tuple2<Long, Double>> {
 		private static final long serialVersionUID = 1;
@@ -203,7 +208,6 @@ public class CheckpointingJobSolution3 {
 		public Tuple3<Long, Double, Double> merge(
 				final Tuple3<Long, Double, Double> agg1,
 				final Tuple3<Long, Double, Double> agg2) {
-			// this way of aggregation does not support merging of two aggregator
 			throw new UnsupportedOperationException();
 		}
 	}
@@ -239,13 +243,6 @@ public class CheckpointingJobSolution3 {
 
 		private Measurement deserialize(final byte[] bytes) throws IOException {
 			return instance.readValue(bytes, Measurement.class);
-		}
-	}
-
-	private static class MeasurementByTimeComparator implements Comparator<Tuple2<Measurement, Long>> {
-		@Override
-		public int compare(Tuple2<Measurement, Long> o1, Tuple2<Measurement, Long> o2) {
-			return Long.compare(o1.f1, o2.f1);
 		}
 	}
 
