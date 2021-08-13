@@ -27,7 +27,7 @@ under the License.
 * Observe the job's healthiness.
 * Fix the job so that checkpoints are not timing out (2 minutes)
 
-**There are 2 ways of solving this exercise. Can you find both?**
+**There are more ways of solving this exercise than by the provided solutions. Can you find more?**
 
 -----
 
