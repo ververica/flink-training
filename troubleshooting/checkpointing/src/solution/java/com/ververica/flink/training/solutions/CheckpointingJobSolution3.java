@@ -46,8 +46,9 @@ import static com.ververica.flink.training.common.EnvironmentUtils.isLocal;
  * Solution 3 fixes the streaming job with slow checkpointing by sorting the stream based on event time
  * then pre-aggregation.
  *
- * In addition, the event time timestamp is accessible in the sorting operator and not needed in the window operator
- * anymore, this solution also change to use DataStream<Measurement> instead of DataStream<Tuple2<Measurement, Long>>
+ * <p>In addition, the event time timestamp is accessible in the sorting operator and not needed in the window operator
+ * anymore, this solution also change to use DataStream&lt;Measurement&gt; instead of
+ * DataStream&lt;Tuple2&lt;Measurement, Long&gt;&gt;
  */
 public class CheckpointingJobSolution3 {
 
