@@ -180,7 +180,7 @@ subprojects {
             importOrder('org.apache.flink', 'org.apache.flink.shaded', '', 'javax', 'java', 'scala', '\\#')
             removeUnusedImports()
 
-            targetExclude("**/generated*/*.java")
+            targetExclude("**/generated*/**/*.java")
 
             licenseHeader '/*\n' +
                     ' * Licensed to the Apache Software Foundation (ASF) under one\n' +
