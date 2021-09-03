@@ -134,7 +134,7 @@ subprojects {
             importOrder('org.apache.flink', 'org.apache.flink.shaded', '', 'javax', 'java', 'scala', '\\#')
             removeUnusedImports()
 
-            targetExclude("**/generated*/*.java")
+            targetExclude("**/generated*/**/*.java")
         }
     }
 
