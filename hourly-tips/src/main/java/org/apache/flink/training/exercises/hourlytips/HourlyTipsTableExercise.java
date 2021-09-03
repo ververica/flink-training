@@ -19,8 +19,7 @@
 package org.apache.flink.training.exercises.hourlytips;
 
 import org.apache.flink.api.common.JobExecutionResult;
-import org.apache.flink.api.common.typeinfo.TypeHint;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -33,6 +32,9 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.training.exercises.common.datatypes.TaxiFare;
 import org.apache.flink.training.exercises.common.sources.TaxiFareGenerator;
 import org.apache.flink.training.exercises.common.utils.MissingSolutionException;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 /**
  * The Hourly Tips exercise from the Flink training, using the Table/SQL API.
@@ -105,7 +107,7 @@ public class HourlyTipsTableExercise {
         // find the driver with the highest sum of tips for each hour
         Table hourlyMax =
                 tableEnv.sqlQuery(
-                        "SELECT 1000 * UNIX_TIMESTAMP(CAST(window_end AS STRING)) AS window_end, driverId, sumOfTips"
+                        "SELECT window_end, driverId, sumOfTips"
                                 + "  FROM ("
                                 + "    SELECT *, ROW_NUMBER() OVER (PARTITION BY window_start, window_end"
                                 + "        ORDER BY sumOfTips DESC) AS rownum"
@@ -123,10 +125,13 @@ public class HourlyTipsTableExercise {
                         .map(
                                 row ->
                                         new Tuple3<>(
-                                                row.<Long>getFieldAs("window_end"),
+                                                row.<LocalDateTime>getFieldAs("window_end")
+                                                        .atZone(ZoneId.systemDefault())
+                                                        .toInstant()
+                                                        .toEpochMilli(),
                                                 row.<Long>getFieldAs("driverId"),
                                                 row.<Float>getFieldAs("sumOfTips")))
-                        .returns(TypeInformation.of(new TypeHint<Tuple3<Long, Long, Float>>() {}));
+                        .returns(Types.TUPLE(Types.LONG, Types.LONG, Types.FLOAT));
 
         resultsAsStreamOfTuples.addSink(sink);
 

@@ -44,9 +44,8 @@ public class HourlyTipsTableTest extends HourlyTipsTest {
         // watermarking doesn't produce late events
         TaxiFareGenerator source = TaxiFareGenerator.runFor(Duration.ofMinutes(60));
         Tuple3<Long, Long, Float> hour1 = Tuple3.of(t(60).toEpochMilli(), 2013000089L, 76.0F);
-        Tuple3<Long, Long, Float> hour2 = Tuple3.of(t(120).toEpochMilli(), 2013000000L, 12.0F);
 
-        assertThat(results(source)).containsExactlyInAnyOrder(hour1, hour2);
+        assertThat(results(source)).containsExactly(hour1);
     }
 
     private static final ExecutablePipeline<TaxiFare, Tuple3<Long, Long, Float>> exercise =
