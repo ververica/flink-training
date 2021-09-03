@@ -4,7 +4,7 @@ import org.apache.flink.api.common.typeutils.TypeSerializerSnapshot;
 import org.apache.flink.core.memory.DataInputView;
 import org.apache.flink.core.memory.DataOutputView;
 
-import com.ververica.training.statemigration.avro.AggregatedSensorStatistics;
+import com.ververica.flink.training.exercises.avro.AggregatedSensorStatistics;
 
 import java.io.IOException;
 

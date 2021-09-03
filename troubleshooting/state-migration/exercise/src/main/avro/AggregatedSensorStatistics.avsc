@@ -1,4 +1,4 @@
-{"namespace": "com.ververica.training.statemigration.avro",
+{"namespace": "com.ververica.flink.training.exercises.avro",
  "type": "record",
  "name": "AggregatedSensorStatistics",
  "fields": [

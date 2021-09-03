@@ -9,7 +9,7 @@ import com.ververica.flink.training.common.Measurement;
 import com.ververica.flink.training.exercises.MeasurementAggregationReport;
 import com.ververica.flink.training.exercises.SensorAggregationProcessingBase;
 import com.ververica.flink.training.exercises.StateMigrationJobBase;
-import com.ververica.training.statemigration.avro.AggregatedSensorStatistics;
+import com.ververica.flink.training.exercises.avro.AggregatedSensorStatistics;
 
 /**
  * Process function to report aggregated sensor statistics using a custom serializer for its state.

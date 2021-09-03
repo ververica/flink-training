@@ -25,7 +25,7 @@ import org.apache.flink.core.memory.DataInputView;
 import org.apache.flink.core.memory.DataOutputView;
 import org.apache.flink.formats.avro.typeutils.AvroSerializer;
 
-import com.ververica.training.statemigration.avro.AggregatedSensorStatistics;
+import com.ververica.flink.training.exercises.avro.AggregatedSensorStatistics;
 
 /** Serializer configuration snapshot for POJO and format evolution. */
 public final class AggregatedSensorStatisticsSerializerSnapshotV2
