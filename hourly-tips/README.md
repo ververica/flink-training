@@ -39,12 +39,17 @@ The resulting stream should be printed to standard out.
 
 > :information_source: Rather than following these links to the sources, you might prefer to open these classes in your IDE.
 
-### Exercise Classes
+### Table/SQL Exercise and Test Classes
+
+- Exercise: [`org.apache.flink.training.exercises.hourlytips.HourlyTipsTableExercise`](src/main/java/org/apache/flink/training/exercises/hourlytips/HourlyTipsTableExercise.java)
+- Tests: [`org.apache.flink.training.exercises.hourlytips.HourlyTipsTableTest`](src/test/java/org/apache/flink/training/exercises/hourlytips/HourlyTipsTableTest.java)
+
+### Java/Scala Exercise Classes
 
 - Java:  [`org.apache.flink.training.exercises.hourlytips.HourlyTipsExercise`](src/main/java/org/apache/flink/training/exercises/hourlytips/HourlyTipsExercise.java)
 - Scala: [`org.apache.flink.training.exercises.hourlytips.scala.HourlyTipsExercise`](src/main/scala/org/apache/flink/training/exercises/hourlytips/scala/HourlyTipsExercise.scala)
 
-### Tests
+### Java/Scala Tests
 
 - Java:  [`org.apache.flink.training.exercises.hourlytips.HourlyTipsTest`](src/test/java/org/apache/flink/training/exercises/hourlytips/HourlyTipsTest.java)
 - Scala: [`org.apache.flink.training.exercises.hourlytips.scala.HourlyTipsTest`](src/test/scala/org/apache/flink/training/exercises/hourlytips/scala/HourlyTipsTest.scala)
@@ -59,13 +64,14 @@ Note that it is possible to cascade one set of time windows after another, so lo
 
 ## Documentation
 
-- [Windows](https://ci.apache.org/projects/flink/flink-docs-stable/dev/stream/operators/windows.html)
-- [See the section on aggregations on windows](https://ci.apache.org/projects/flink/flink-docs-stable/dev/stream/operators/#datastream-transformations)
+- [Table/SQL Window Top-N](https://ci.apache.org/projects/flink/flink-docs-stable/docs/dev/table/sql/queries/window-topn/)
+- [DataStream Windows](https://ci.apache.org/projects/flink/flink-docs-stable/dev/stream/operators/windows.html)
 
 ## Reference Solutions
 
 Reference solutions are available at GitHub:
 
+- Table/SQL:  [`org.apache.flink.training.solutions.hourlytips.HourlyTipsTableSolution`](src/solution/java/org/apache/flink/training/solutions/hourlytips/HourlyTipsTableSolution.java)
 - Java:  [`org.apache.flink.training.solutions.hourlytips.HourlyTipsSolution`](src/solution/java/org/apache/flink/training/solutions/hourlytips/HourlyTipsSolution.java)
 - Scala: [`org.apache.flink.training.solutions.hourlytips.scala.HourlyTipsSolution`](src/solution/scala/org/apache/flink/training/solutions/hourlytips/scala/HourlyTipsSolution.scala)
 
