@@ -94,6 +94,10 @@ subprojects {
         shadow "org.apache.flink:flink-streaming-java_${scalaBinaryVersion}:${flinkVersion}"
         shadow "org.apache.flink:flink-streaming-scala_${scalaBinaryVersion}:${flinkVersion}"
 
+        // dependencies for running in the IDE:
+        shadow "org.apache.flink:flink-runtime-web_${scalaBinaryVersion}:${flinkVersion}"
+        shadow "org.apache.flink:flink-statebackend-rocksdb_${scalaBinaryVersion}:${flinkVersion}"
+
         if (project != project(":common") && !project.path.startsWith(":troubleshooting")) {
             implementation project(path: ':common')
             testImplementation(project(":common")) {
