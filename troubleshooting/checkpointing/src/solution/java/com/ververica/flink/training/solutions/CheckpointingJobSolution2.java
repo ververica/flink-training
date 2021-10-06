@@ -170,12 +170,11 @@ public class CheckpointingJobSolution2 {
             long eventsPerWindow = 0L;
             double sumPerWindow = 0.0;
 
-            double diffPerMeasurement;
             Measurement previous = null;
             for (Tuple2<Measurement, Long> measurement : list) {
                 ++eventsPerWindow;
                 if (previous != null) {
-                    diffPerMeasurement = measurement.f0.getValue() - previous.getValue();
+                    double diffPerMeasurement = measurement.f0.getValue() - previous.getValue();
                     sumPerWindow += diffPerMeasurement * diffPerMeasurement;
                 }
                 previous = measurement.f0;

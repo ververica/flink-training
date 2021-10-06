@@ -193,9 +193,8 @@ public class CheckpointingJobSolution3 {
         public Tuple3<Long, Double, Double> add(
                 final Measurement record, final Tuple3<Long, Double, Double> aggregate) {
 
-            double diffPerMeasurement;
             if (aggregate.f0 > 0) {
-                diffPerMeasurement = record.getValue() - aggregate.f2;
+                double diffPerMeasurement = record.getValue() - aggregate.f2;
                 aggregate.f1 += diffPerMeasurement * diffPerMeasurement;
             }
             aggregate.f0++;
