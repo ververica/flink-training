@@ -41,7 +41,7 @@ public class TemperatureClient {
     public void asyncGetTemperatureFor(String location, Consumer<Float> callback) {
         CompletableFuture.supplyAsync(new TemperatureSupplier(), pool)
                 .thenAcceptAsync(
-                        callback, org.apache.flink.runtime.concurrent.Executors.directExecutor());
+                        callback, org.apache.flink.util.concurrent.Executors.directExecutor());
     }
 
     private class TemperatureSupplier implements Supplier<Float> {
