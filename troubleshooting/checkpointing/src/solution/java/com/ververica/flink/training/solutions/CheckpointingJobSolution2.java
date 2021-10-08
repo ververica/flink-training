@@ -169,7 +169,6 @@ public class CheckpointingJobSolution2 {
 
             long eventsPerWindow = 0L;
             double sumPerWindow = 0.0;
-
             Measurement previous = null;
             for (Tuple2<Measurement, Long> measurement : list) {
                 ++eventsPerWindow;
