@@ -46,7 +46,7 @@ public class SourceUtils {
 
         final List<String> locations = readLocationsFromFile();
 
-        List<byte[]> measurements = new ArrayList<>();
+        List<byte[]> measurements = new ArrayList<>(NUM_OF_MEASUREMENTS);
         for (int i = 0; i < NUM_OF_MEASUREMENTS; i++) {
             Measurement nextMeasurement =
                     new Measurement(
