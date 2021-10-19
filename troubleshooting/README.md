@@ -7,6 +7,7 @@
    1. [Object Reuse](object-reuse)
    1. [External Enrichment](external-enrichment)
    1. [State Migration](state-migration)
+   1. [RocksDB Tuning](rocksdb)
 
 -----
 

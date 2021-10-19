@@ -1,0 +1,18 @@
+ext.javaExerciseClassName = 'com.ververica.flink.training.exercises.RocksDBTuningJob'
+
+apply plugin: 'application'
+
+mainClassName = ext.javaExerciseClassName
+
+dependencies {
+    implementation project(path: ':troubleshooting:common')
+
+    implementation 'com.github.javafaker:javafaker:1.0.2'
+}
+
+sourceSets {
+    main.java.srcDirs += 'src/provided/java'
+    tasks.withType(ScalaCompile) {
+        main.scala.srcDirs += 'src/provided/scala'
+    }
+}

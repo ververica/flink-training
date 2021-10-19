@@ -64,7 +64,8 @@ public class SourceUtils {
         return measurements;
     }
 
-    private static List<String> readLocationsFromFile() {
+    /** Reads available locations from the 'cities#csv' resource file and returns them as a list. */
+    public static List<String> readLocationsFromFile() {
         List<String> locations = new ArrayList<>();
         try (InputStream is = SourceUtils.class.getResourceAsStream("/cities.csv");
                 BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
