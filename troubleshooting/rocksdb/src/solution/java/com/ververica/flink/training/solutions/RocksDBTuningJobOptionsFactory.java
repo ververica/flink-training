@@ -6,11 +6,14 @@ import org.apache.flink.configuration.description.Description;
 import org.apache.flink.contrib.streaming.state.ConfigurableRocksDBOptionsFactory;
 import org.apache.flink.contrib.streaming.state.DefaultConfigurableOptionsFactory;
 
+import org.rocksdb.BlockBasedTableConfig;
+import org.rocksdb.BloomFilter;
 import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.CompressionType;
 import org.rocksdb.DBOptions;
 import org.rocksdb.InfoLogLevel;
 import org.rocksdb.Logger;
+import org.rocksdb.TableFormatConfig;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -38,6 +41,14 @@ public class RocksDBTuningJobOptionsFactory implements ConfigurableRocksDBOption
                     .durationType()
                     .defaultValue(Duration.ofMinutes(5))
                     .withDescription("If not zero, dump RocksDB stats this often");
+
+    // available since Flink 1.14.1 as `state.backend.rocksdb.use-bloom-filter`
+    // (see https://issues.apache.org/jira/browse/FLINK-21336)
+    private static final ConfigOption<Boolean> ENABLE_BLOOM_FILTER =
+            key("state.backend.rocksdb.custom.bloomfilter")
+                    .booleanType()
+                    .defaultValue(false)
+                    .withDescription("Enables the use of Bloom filters");
 
     private static final ConfigOption<CompressionType> COMPRESSION =
             key("state.backend.rocksdb.custom.compression")
@@ -94,6 +105,19 @@ public class RocksDBTuningJobOptionsFactory implements ConfigurableRocksDBOption
     public ColumnFamilyOptions createColumnOptions(
             ColumnFamilyOptions currentOptions, Collection<AutoCloseable> handlesToClose) {
         currentOptions = defaultFactory.createColumnOptions(currentOptions, handlesToClose);
+
+        TableFormatConfig currentTableFormatConfig = currentOptions.tableFormatConfig();
+        if (currentTableFormatConfig instanceof BlockBasedTableConfig) {
+            BlockBasedTableConfig currentBlockBasedTableFormatConfig =
+                    (BlockBasedTableConfig) currentTableFormatConfig;
+
+            if (configuration.get(ENABLE_BLOOM_FILTER)) {
+                BloomFilter bloomFilter = new BloomFilter();
+                handlesToClose.add(bloomFilter);
+                currentOptions.setTableFormatConfig(
+                        currentBlockBasedTableFormatConfig.setFilterPolicy(bloomFilter));
+            }
+        }
 
         configuration.getOptional(COMPRESSION).ifPresent(currentOptions::setCompressionType);
 
