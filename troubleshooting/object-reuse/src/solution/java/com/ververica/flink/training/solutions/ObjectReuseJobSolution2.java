@@ -18,24 +18,17 @@
 
 package com.ververica.flink.training.solutions;
 
-import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.streaming.api.datastream.DataStreamUtils;
-import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.streaming.api.functions.sink.DiscardingSink;
-import org.apache.flink.streaming.api.windowing.assigners.SlidingProcessingTimeWindows;
-import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.types.DoubleValue;
 import org.apache.flink.types.FloatValue;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.OutputTag;
 
 import com.ververica.flink.training.provided.GeoUtils2;
 import com.ververica.flink.training.provided.MeanGauge;
@@ -46,7 +39,6 @@ import com.ververica.flink.training.solutions.immutable.MeasurementValue;
 import com.ververica.flink.training.solutions.immutable.ObjectReuseExtendedMeasurementSource;
 import com.ververica.flink.training.solutions.immutable.Sensor;
 
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,27 +69,20 @@ public class ObjectReuseJobSolution2 {
         env.enableCheckpointing(5000);
         env.getCheckpointConfig().setMinPauseBetweenCheckpoints(4000);
 
-        final OutputTag<ExtendedMeasurement> temperatureTag =
-                new OutputTag<ExtendedMeasurement>("temperature") {
-                    private static final long serialVersionUID = -3127503822430851744L;
-                };
-        final OutputTag<ExtendedMeasurement> windTag =
-                new OutputTag<ExtendedMeasurement>("wind") {
-                    private static final long serialVersionUID = 4249595595891069268L;
-                };
-
-        SingleOutputStreamOperator<ExtendedMeasurement> splitStream =
+        SingleOutputStreamOperator<ExtendedMeasurement> temperatureStream =
                 env.addSource(new ObjectReuseExtendedMeasurementSource())
                         .name("FakeMeasurementSource")
                         .uid("FakeMeasurementSource")
-                        .keyBy(ExtendedMeasurement::getSensor)
-                        .process(new SplitSensors(temperatureTag, windTag))
-                        .name("SplitSensors")
-                        .uid("SplitSensors");
+                        .filter(
+                                t ->
+                                        t.getSensor()
+                                                .getSensorType()
+                                                .equals(Sensor.SensorType.Temperature))
+                        .name("FilterTemperature")
+                        .uid("FilterTemperature");
 
         // (1) stream with the temperature converted into local temperature units (°F in the US)
-        splitStream
-                .getSideOutput(temperatureTag)
+        temperatureStream
                 .map(new ConvertToLocalTemperature())
                 .name("ConvertToLocalTemperature")
                 .uid("ConvertToLocalTemperature")
@@ -106,14 +91,9 @@ public class ObjectReuseJobSolution2 {
                 .uid("LocalizedTemperatureSink")
                 .disableChaining();
 
-        // no need to do keyBy again; we did not change the key!
-        KeyedStream<ExtendedMeasurement, Sensor> keyedTemperatureStream =
-                DataStreamUtils.reinterpretAsKeyedStream(
-                        splitStream.getSideOutput(temperatureTag), ExtendedMeasurement::getSensor);
-
         // (2) stream with an (exponentially) moving average of the temperature (smoothens sensor
         //     measurements, variant A); then converted into local temperature units (°F in the US)
-        keyedTemperatureStream
+        temperatureStream
                 .flatMap(new MovingAverageSensors())
                 .name("MovingAverageTemperature")
                 .uid("MovingAverageTemperature")
@@ -125,57 +105,7 @@ public class ObjectReuseJobSolution2 {
                 .uid("LocalizedAverageTemperatureSink")
                 .disableChaining();
 
-        // (3) stream with an windowed-average of the temperature (to smoothens sensor
-        //     measurements, variant B); then converted into local temperature units (°F in the US)
-        keyedTemperatureStream
-                .window(SlidingProcessingTimeWindows.of(Time.seconds(10), Time.seconds(1)))
-                .aggregate(new WindowAverageSensor())
-                .name("WindowAverageTemperature")
-                .uid("WindowAverageTemperature")
-                .map(new ConvertToLocalTemperature())
-                .name("ConvertToLocalWindowedTemperature")
-                .uid("ConvertToLocalWindowedTemperature")
-                .addSink(new DiscardingSink<>())
-                .name("LocalizedWindowedTemperatureSink")
-                .uid("LocalizedWindowedTemperatureSink")
-                .disableChaining();
-
-        // (4) stream with the wind speed converted into local speed units (mph in the US)
-        splitStream
-                .getSideOutput(windTag)
-                .map(new ConvertToLocalWindSpeed())
-                .name("NormalizeWindSpeed")
-                .uid("NormalizeWindSpeed")
-                .addSink(new DiscardingSink<>())
-                .name("WindSink")
-                .uid("WindSink")
-                .disableChaining();
-
         env.execute(ObjectReuseJobSolution2.class.getSimpleName());
-    }
-
-    /** Splits a stream into multiple side-outputs, one for each sensor. */
-    private static class SplitSensors
-            extends KeyedProcessFunction<Sensor, ExtendedMeasurement, ExtendedMeasurement> {
-        private static final long serialVersionUID = 1L;
-
-        private final EnumMap<Sensor.SensorType, OutputTag<ExtendedMeasurement>> outputTagBySensor =
-                new EnumMap<>(Sensor.SensorType.class);
-
-        SplitSensors(
-                OutputTag<ExtendedMeasurement> temperatureTag,
-                OutputTag<ExtendedMeasurement> windTag) {
-            outputTagBySensor.put(Sensor.SensorType.Temperature, temperatureTag);
-            outputTagBySensor.put(Sensor.SensorType.Wind, windTag);
-        }
-
-        @Override
-        public void processElement(
-                ExtendedMeasurement value, Context ctx, Collector<ExtendedMeasurement> out) {
-            Sensor.SensorType sensorType = value.getSensor().getSensorType();
-            OutputTag<ExtendedMeasurement> output = outputTagBySensor.get(sensorType);
-            ctx.output(output, value);
-        }
     }
 
     /**
@@ -224,60 +154,6 @@ public class ObjectReuseJobSolution2 {
         }
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public static class WindowedAggregate {
-        public double sumValue = 0.0;
-        public double sumAccuracy = 0.0;
-        public long count = 0;
-        public ExtendedMeasurement lastValue = null;
-
-        /** Constructor. */
-        public WindowedAggregate() {}
-    }
-
-    /** Aggregate function determining average sensor values and accuracies per sensor instance. */
-    private static class WindowAverageSensor
-            implements AggregateFunction<
-                    ExtendedMeasurement, WindowedAggregate, ExtendedMeasurement> {
-        @Override
-        public WindowedAggregate createAccumulator() {
-            return new WindowedAggregate();
-        }
-
-        @Override
-        public WindowedAggregate add(ExtendedMeasurement value, WindowedAggregate accumulator) {
-            accumulator.sumAccuracy += value.getMeasurement().getAccuracy();
-            accumulator.sumValue += value.getMeasurement().getValue();
-            accumulator.count++;
-            accumulator.lastValue = value;
-            return accumulator;
-        }
-
-        @Override
-        public ExtendedMeasurement getResult(WindowedAggregate accumulator) {
-            double avgValue = accumulator.sumValue / accumulator.count;
-            float avgAccuracy = (float) (accumulator.sumAccuracy / accumulator.count);
-            ExtendedMeasurement lastValue = accumulator.lastValue;
-            MeasurementValue measurement =
-                    new MeasurementValue(
-                            avgValue, avgAccuracy, lastValue.getMeasurement().getTimestamp());
-            return new ExtendedMeasurement(
-                    lastValue.getSensor(), lastValue.getLocation(), measurement);
-        }
-
-        @Override
-        public WindowedAggregate merge(WindowedAggregate a, WindowedAggregate b) {
-            a.count += b.count;
-            a.sumValue += b.sumValue;
-            a.sumAccuracy += b.sumAccuracy;
-            if (b.lastValue.getMeasurement().getTimestamp()
-                    > a.lastValue.getMeasurement().getTimestamp()) {
-                a.lastValue = b.lastValue;
-            }
-            return a;
-        }
-    }
-
     /**
      * Converts SI units to locale-dependent units, i.e. °C to °F for the US. Adds a custom metric
      * to report temperatures in the US.
@@ -318,33 +194,6 @@ public class ObjectReuseJobSolution2 {
                                 normalized, measurement.getAccuracy(), measurement.getTimestamp());
 
                 normalizedTemperatureUS.addValue(normalized);
-                return new ExtendedMeasurement(
-                        value.getSensor(), value.getLocation(), localizedMeasurement);
-            } else {
-                return value;
-            }
-        }
-    }
-
-    /**
-     * Converts SI units to locale-dependent units, i.e. km/h to mph for the US. Adds a custom
-     * metric to report wind speeds in the US.
-     */
-    private static class ConvertToLocalWindSpeed
-            extends RichMapFunction<ExtendedMeasurement, ExtendedMeasurement> {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public ExtendedMeasurement map(ExtendedMeasurement value) {
-            Location location = value.getLocation();
-            if (GeoUtils2.isInUS(location.getLongitude(), location.getLatitude())) {
-                MeasurementValue measurement = value.getMeasurement();
-                double normalized = WeatherUtils.kphToMph(measurement.getValue());
-
-                MeasurementValue localizedMeasurement =
-                        new MeasurementValue(
-                                normalized, measurement.getAccuracy(), measurement.getTimestamp());
-
                 return new ExtendedMeasurement(
                         value.getSensor(), value.getLocation(), localizedMeasurement);
             } else {
