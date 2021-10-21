@@ -26,8 +26,6 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.DiscardingSink;
-import org.apache.flink.types.DoubleValue;
-import org.apache.flink.types.FloatValue;
 import org.apache.flink.util.Collector;
 
 import com.ververica.flink.training.provided.ExtendedMeasurement;
@@ -117,7 +115,7 @@ public class ObjectReuseJobSolution1 {
             extends RichFlatMapFunction<ExtendedMeasurement, ExtendedMeasurement> {
         private static final long serialVersionUID = 1L;
 
-        private final Map<ExtendedMeasurement.Sensor, Tuple2<FloatValue, DoubleValue>> lastAverage =
+        private final Map<ExtendedMeasurement.Sensor, Tuple2<Float, Double>> lastAverage =
                 new HashMap<>();
 
         @Override
@@ -125,26 +123,23 @@ public class ObjectReuseJobSolution1 {
             ExtendedMeasurement.Sensor sensor = value.getSensor();
             ExtendedMeasurement.MeasurementValue measurement = value.getMeasurement();
 
-            Tuple2<FloatValue, DoubleValue> last = lastAverage.get(sensor);
+            Tuple2<Float, Double> last = lastAverage.get(sensor);
             if (last != null) {
-                last.f0.setValue((last.f0.getValue() + measurement.getAccuracy()) / 2.0f);
-                last.f1.setValue((last.f1.getValue() + measurement.getValue()) / 2.0);
+                float newAccuracy = (last.f0 + measurement.getAccuracy()) / 2.0f;
+                double newValue = (last.f1 + measurement.getValue()) / 2.0;
 
                 ExtendedMeasurement.MeasurementValue averageMeasurement =
                         new ExtendedMeasurement.MeasurementValue(
-                                last.f1.getValue(), last.f0.getValue(), measurement.getTimestamp());
+                                newValue, newAccuracy, measurement.getTimestamp());
                 ExtendedMeasurement forward =
                         new ExtendedMeasurement(
                                 value.getSensor(), value.getLocation(), averageMeasurement);
 
-                // do not forward the first value (it only stands alone)
                 out.collect(forward);
             } else {
+                // do not forward the first value (it only stands alone)
                 lastAverage.put(
-                        sensor,
-                        Tuple2.of(
-                                new FloatValue(measurement.getAccuracy()),
-                                new DoubleValue(measurement.getValue())));
+                        sensor, Tuple2.of(measurement.getAccuracy(), measurement.getValue()));
             }
         }
     }
