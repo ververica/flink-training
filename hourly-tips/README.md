@@ -64,8 +64,8 @@ Note that it is possible to cascade one set of time windows after another, so lo
 
 ## Documentation
 
-- [Table/SQL Window Top-N](https://ci.apache.org/projects/flink/flink-docs-stable/docs/dev/table/sql/queries/window-topn/)
-- [DataStream Windows](https://ci.apache.org/projects/flink/flink-docs-stable/dev/stream/operators/windows.html)
+- [Table/SQL Window Top-N](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/table/sql/queries/window-topn)
+- [DataStream Windows](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/operators/windows)
 
 ## Reference Solutions
 
