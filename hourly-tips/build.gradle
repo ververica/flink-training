@@ -25,7 +25,7 @@ apply plugin: 'application'
 mainClassName = ext.javaExerciseClassName
 
 dependencies {
-    shadow "org.apache.flink:flink-table-api-java-bridge_${scalaBinaryVersion}:${flinkVersion}"
+    shadow "org.apache.flink:flink-table-api-java-bridge:${flinkVersion}"
     shadow "org.apache.flink:flink-table-planner_${scalaBinaryVersion}:${flinkVersion}"
     shadow "org.apache.flink:flink-table-common:${flinkVersion}"
 }

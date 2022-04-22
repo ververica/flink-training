@@ -24,7 +24,7 @@ description = "Flink Training Exercises"
 
 allprojects {
     group = 'org.apache.flink'
-    version = '1.14-SNAPSHOT'
+    version = '1.15-SNAPSHOT'
 
     apply plugin: 'com.diffplug.spotless'
 
@@ -100,7 +100,7 @@ subprojects {
 
     ext {
         javaVersion = '1.8'
-        flinkVersion = '1.14.0'
+        flinkVersion = '1.15.3'
         scalaBinaryVersion = '2.12'
         jacksonVersion = '2.11.2'
         log4jVersion = '2.12.1'
@@ -132,15 +132,15 @@ subprojects {
         shadow "org.apache.logging.log4j:log4j-api:${log4jVersion}"
         shadow "org.apache.logging.log4j:log4j-core:${log4jVersion}"
 
-        shadow "org.apache.flink:flink-clients_${scalaBinaryVersion}:${flinkVersion}"
+        shadow "org.apache.flink:flink-clients:${flinkVersion}"
         shadow "org.apache.flink:flink-java:${flinkVersion}"
-        shadow "org.apache.flink:flink-streaming-java_${scalaBinaryVersion}:${flinkVersion}"
+        shadow "org.apache.flink:flink-streaming-java:${flinkVersion}"
         shadow "org.apache.flink:flink-streaming-scala_${scalaBinaryVersion}:${flinkVersion}"
 
         // allows using Flink's web UI when running in the IDE:
-        shadow "org.apache.flink:flink-runtime-web_${scalaBinaryVersion}:${flinkVersion}"
+        shadow "org.apache.flink:flink-runtime-web:${flinkVersion}"
         // allow using RocksDB when running in the IDE:
-        shadow "org.apache.flink:flink-statebackend-rocksdb_${scalaBinaryVersion}:${flinkVersion}"
+        shadow "org.apache.flink:flink-statebackend-rocksdb:${flinkVersion}"
 
         if (project != project(":common") && !project.path.startsWith(":troubleshooting")) {
             implementation project(path: ':common')

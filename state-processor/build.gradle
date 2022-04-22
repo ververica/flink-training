@@ -28,7 +28,7 @@ dependencies {
     // Compile-time dependencies that should NOT be part of the
     // shadow jar and are provided in the lib folder of Flink
     // --------------------------------------------------------------
-    shadow "org.apache.flink:flink-state-processor-api_${scalaBinaryVersion}:${flinkVersion}"
+    shadow "org.apache.flink:flink-state-processor-api:${flinkVersion}"
 
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
