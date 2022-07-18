@@ -40,7 +40,11 @@ import java.util.concurrent.TimeUnit;
 import static com.ververica.flink.training.common.EnvironmentUtils.createConfiguredEnvironment;
 import static com.ververica.flink.training.common.EnvironmentUtils.isLocal;
 
-/** RocksDB Training job. */
+/**
+ * RocksDB Training job.
+ * <p>
+ * This job calculates the aggregated value with a decaying factor of 0.5 for events in the last N timestamps.
+ * */
 @DoNotChangeThis
 public class RocksDBTuningJob1 {
 
