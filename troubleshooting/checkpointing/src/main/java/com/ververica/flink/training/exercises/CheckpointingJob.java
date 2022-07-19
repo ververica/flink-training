@@ -51,7 +51,12 @@ import java.util.concurrent.TimeUnit;
 import static com.ververica.flink.training.common.EnvironmentUtils.createConfiguredEnvironment;
 import static com.ververica.flink.training.common.EnvironmentUtils.isLocal;
 
-/** Streaming job that isn't performing as expected. Checkpointing is slow. */
+/**
+ * Streaming job that isn't performing as expected. Checkpointing is slow.
+ * <p>
+ * This job read sensor measurements event from a Kafka source (faked), deserialize them, and calculate the average
+ * temperature difference between two sensor readings in event-time order using a window operator.
+ * */
 public class CheckpointingJob {
 
     /**
