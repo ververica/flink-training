@@ -41,7 +41,11 @@ import java.util.concurrent.TimeUnit;
 import static com.ververica.flink.training.common.EnvironmentUtils.createConfiguredEnvironment;
 import static com.ververica.flink.training.common.EnvironmentUtils.isLocal;
 
-/** RocksDB Training job. */
+/**
+ * RocksDB Training job.
+ * <p>
+ * This job outputs the latest measurements in windows that are calculated based on sensor ids.
+ * */
 @DoNotChangeThis
 public class RocksDBTuningJob2 {
 

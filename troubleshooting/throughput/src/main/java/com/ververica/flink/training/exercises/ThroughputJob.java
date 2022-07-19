@@ -47,7 +47,13 @@ import java.time.Duration;
 import static com.ververica.flink.training.common.EnvironmentUtils.createConfiguredEnvironment;
 import static com.ververica.flink.training.common.EnvironmentUtils.isLocal;
 
-/** Streaming job that isn't performing as expected. */
+/**
+ * Streaming job that isn't performing as expected.
+ * <p>
+ * This job reads sensor measurement events from a Kafka source (faked), deserialize them, and calculate the sum and the
+ * total number of events value per location per window using a window operator. Then it uses another window operator
+ * to get the aggregated results per area.
+ * */
 public class ThroughputJob {
 
     /**
