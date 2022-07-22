@@ -63,7 +63,7 @@ public class RocksDBTuningJobOptionsFactory implements ConfigurableRocksDBOption
     // available since Flink 1.14.1 as `state.backend.rocksdb.use-bloom-filter`
     // (see https://issues.apache.org/jira/browse/FLINK-21336)
     private static final ConfigOption<Boolean> ENABLE_BLOOM_FILTER =
-            key("state.backend.rocksdb.custom.bloomfilter")
+            key("state.backend.rocksdb.use-bloom-filter")
                     .booleanType()
                     .defaultValue(false)
                     .withDescription("Enables the use of Bloom filters");
