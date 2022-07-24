@@ -59,7 +59,7 @@ public class RocksDBTuningJob2 {
 
         int numSensors = parameters.getInt("numSensors", 10_000_000);
         int payloadWords = parameters.getInt("payloadWords", 200);
-        Duration windowSize = Duration.parse(parameters.get("windowSize", "PT10M"));
+        Duration windowSize = Duration.parse(parameters.get("windowSize", "PT20M"));
         boolean unalignedWindows = parameters.getBoolean("unalignedWindows", true);
 
         StreamExecutionEnvironment env = createConfiguredEnvironment(parameters);
