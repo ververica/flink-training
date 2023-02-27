@@ -59,7 +59,10 @@ Flink supports Linux, OS X, and Windows as development environments for Flink pr
 - Git
 - a JDK for Java 8 or Java 11 (a JRE is not sufficient; other versions of Java are currently not supported)
 - an IDE for Java (and/or Scala) development with Gradle support
-  - We recommend [IntelliJ](https://www.jetbrains.com/idea/), but [Eclipse](https://www.eclipse.org/downloads/) or [Visual Studio Code](https://code.visualstudio.com/) (with the [Java extension pack](https://code.visualstudio.com/docs/java/java-tutorial)) can also be used so long as you stick to Java
+  - We recommend [IntelliJ](https://www.jetbrains.com/idea/), but [Eclipse](https://www.eclipse.org/downloads/) or 
+    [Visual Studio Code](https://code.visualstudio.com/) (with the [Java extension pack](https://code.visualstudio.
+    com/docs/java/java-tutorial)) can also be used so long as you stick to Java. 
+  - The recent Eclipse comes with Java 17, make sure you configure the Gradle plugin to use Java 8 or 11.
   - For Scala, you will need to use IntelliJ (and its [Scala plugin](https://plugins.jetbrains.com/plugin/1347-scala/))
 
 > **:information_source: Note for Windows users:** The shell command examples provided in the training instructions are for UNIX systems.
@@ -78,8 +81,8 @@ This `flink-training` repository contains exercises, tests, and reference soluti
 Clone the `flink-training` repository from GitHub, navigate into the project repository, and build it:
 
 ```bash
-git clone https://github.com/ververica/flink-training.git ververica-flink-training
-cd ververica-flink-training
+git clone https://github.com/ververica/flink-training.git
+cd flink-training
 ./gradlew test shadowJar
 ```
 
@@ -130,11 +133,21 @@ You can also selectively apply this plugin in a single subproject if desired.
 
 The project needs to be imported as a gradle project into your IDE.
 
-Then you should be able to open [`RideCleansingTest`](ride-cleansing/src/test/java/org/apache/flink/training/exercises/ridecleansing/RideCleansingTest.java) and run this test.
+Then you should be able to open [`RideCleansingIntegrationTest`](ride-cleansing/src/test/java/org/apache/flink/training/exercises/ridecleansing/RideCleansingIntegrationTest.java) and run this test.
 
 > **:information_source: Note for Scala users:** You will need to use IntelliJ with the JetBrains Scala plugin, and you will need to add a Scala 2.12 SDK to the Global Libraries section of the Project Structure as well as to the module you are working on.
 > IntelliJ will ask you for the latter when you open a Scala file.
 > Please note that Scala 2.12.8 and above are not supported (see [Flink Scala Versions](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/project-configuration/#scala-versions for details))!
+
+> **:information_source: Note for Eclipse users:** You likely need to run this command from the project directory, 
+> in order for Eclipse to detect the Gradle project dependences correctly:
+> 
+> `cd flink-training`
+> 
+> `./gradlew cleanEclipse cleanEclipseProject cleanEclipseClasspath eclipse`
+> 
+> Then, set `Without test code` to `no` in the project dependence, see the screenshot: 
+> ![dependency-fix](images/project-dependency-fix-test-code.png)
 
 ## Use the taxi data streams
 

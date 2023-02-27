@@ -134,11 +134,20 @@ org.gradle.project.enable_scala = true
 
 本项目应作为 gradle 项目导入到IDE中。
 
-然后应该可以打开 [`RideCleansingTest`](ride-cleansing/src/test/java/org/apache/flink/training/exercises/ridecleansing/RideCleansingTest.java) 并运行此测试。
+然后应该可以打开 [`RideCleansingIntegrationTest`](ride-cleansing/src/test/java/org/apache/flink/training/exercises/ridecleansing/RideCleansingIntegrationTest.java) 并运行此测试。
 
 > **:information_source: Scala 用户须知:** 需要将 IntelliJ 与 JetBrains Scala 插件一起使用，并且需要将 Scala 2.12 SDK 添加到项目结构的全局库部分以及工作模块中。
 > 当打开 Scala 文件时，IntelliJ 会要求提供后者(JetBrains Scala 插件)。
 > 请注意 Scala 2.12.8 及以上版本不受支持 (详细信息参见 [Flink Scala Versions](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/project-configuration/#scala-versions))!
+
+> **:information_source: Eclipse用户须知:** 为了让Eclipse检测到Gradle项目之间的依赖关系，你可能需要在项目目录下运行以下命令：
+> `cd flink-training`
+> 
+> `./gradlew cleanEclipse cleanEclipseProject cleanEclipseClasspath eclipse`
+> 
+> 然后在项目依赖中设置包含测试代码（见截图）: 
+> ![dependency-fix](images/project-dependency-fix-test-code.png)
+
 
 <a name="using-the-taxi-data-streams"></a>
 
