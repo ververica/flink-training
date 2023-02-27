@@ -139,14 +139,14 @@ Then you should be able to open [`RideCleansingIntegrationTest`](ride-cleansing/
 > IntelliJ will ask you for the latter when you open a Scala file.
 > Please note that Scala 2.12.8 and above are not supported (see [Flink Scala Versions](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/project-configuration/#scala-versions for details))!
 
-> **:information_source: Note for Eclipse users:** You likely need to run this command from the project directory, 
-> in order for Eclipse to detect the Gradle project dependences correctly:
+> **:information_source: Note for Eclipse users:** Several Gradle projects (e.g., ride-cleansing) in this repo 
+> depend on the Gradle project `common`. In order for Eclipse to detect the Gradle project dependencies correctly:
+> You likely need to run the following command:
 > 
-> `cd flink-training`
+> `cd flink-training; ./gradlew cleanEclipse cleanEclipseProject cleanEclipseClasspath eclipse`
 > 
-> `./gradlew cleanEclipse cleanEclipseProject cleanEclipseClasspath eclipse`
-> 
-> Then, set `Without test code` to `no` in the project dependence, see the screenshot: 
+> Then, in the Gradle project that depends on `common`, set `Without test code` to `No` in the project dependence 
+> setting. See the screenshot: 
 > ![dependency-fix](images/project-dependency-fix-test-code.png)
 
 ## Use the taxi data streams

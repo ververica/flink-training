@@ -140,12 +140,11 @@ org.gradle.project.enable_scala = true
 > 当打开 Scala 文件时，IntelliJ 会要求提供后者(JetBrains Scala 插件)。
 > 请注意 Scala 2.12.8 及以上版本不受支持 (详细信息参见 [Flink Scala Versions](https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/datastream/project-configuration/#scala-versions))!
 
-> **:information_source: Eclipse用户须知:** 为了让Eclipse检测到Gradle项目之间的依赖关系，你可能需要在项目目录下运行以下命令：
-> `cd flink-training`
+> **:information_source: Eclipse用户须知:** 
+> 这个仓库中有好几个Gradle项目（例如ride-cleansing）依赖于Gradle项目common。为了让Eclipse检测到Gradle项目之间的依赖关系，你可能需要运行以下命令：
+> `cd flink-training; ./gradlew cleanEclipse cleanEclipseProject cleanEclipseClasspath eclipse`
 > 
-> `./gradlew cleanEclipse cleanEclipseProject cleanEclipseClasspath eclipse`
-> 
-> 然后在项目依赖中设置包含测试代码（见截图）: 
+> 然后在依赖于common的Gradle项目中的项目依赖设置页面中设置Without test code为No。参见屏幕截图: 
 > ![dependency-fix](images/project-dependency-fix-test-code.png)
 
 
