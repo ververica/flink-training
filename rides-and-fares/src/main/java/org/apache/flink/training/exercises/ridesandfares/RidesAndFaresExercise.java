@@ -19,7 +19,15 @@
 package org.apache.flink.training.exercises.ridesandfares;
 
 import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.api.common.state.MapState;
+import org.apache.flink.api.common.state.MapStateDescriptor;
+import org.apache.flink.api.common.state.ValueState;
+import org.apache.flink.api.common.state.ValueStateDescriptor;
+import org.apache.flink.api.common.typeinfo.TypeHint;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.scala.codegen.TypeDescriptors.ValueDescriptor;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.runtime.execution.Environment;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.co.RichCoFlatMapFunction;
@@ -31,6 +39,7 @@ import org.apache.flink.training.exercises.common.datatypes.TaxiFare;
 import org.apache.flink.training.exercises.common.datatypes.TaxiRide;
 import org.apache.flink.training.exercises.common.sources.TaxiFareGenerator;
 import org.apache.flink.training.exercises.common.sources.TaxiRideGenerator;
+import org.apache.flink.training.exercises.common.utils.EnvironmentUtils;
 import org.apache.flink.training.exercises.common.utils.MissingSolutionException;
 import org.apache.flink.util.Collector;
 
@@ -62,9 +71,9 @@ public class RidesAndFaresExercise {
      * @throws Exception which occurs during job execution.
      * @return {JobExecutionResult}
      */
-    public JobExecutionResult execute() throws Exception {
+    public JobExecutionResult execute(boolean useLocalEnvironment) throws Exception {
 
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamExecutionEnvironment env = EnvironmentUtils.getStreamExecutionEnvironment(useLocalEnvironment);
 
         // A stream of taxi ride START events, keyed by rideId.
         DataStream<TaxiRide> rides =
@@ -80,6 +89,10 @@ public class RidesAndFaresExercise {
         return env.execute("Join Rides with Fares");
     }
 
+    public JobExecutionResult execute() throws Exception {
+        return execute(false);
+    }
+
     /**
      * Main method.
      *
@@ -93,25 +106,46 @@ public class RidesAndFaresExercise {
                         new TaxiFareGenerator(),
                         new PrintSinkFunction<>());
 
-        job.execute();
+        job.execute(true);
     }
 
     public static class EnrichmentFunction
             extends RichCoFlatMapFunction<TaxiRide, TaxiFare, RideAndFare> {
 
+        private transient ValueState<TaxiRide> rideState;
+        private transient ValueState<TaxiFare> fareState;
+
         @Override
         public void open(Configuration config) throws Exception {
-            throw new MissingSolutionException();
+            ValueStateDescriptor<TaxiRide> rStateDescriptor = new ValueStateDescriptor<>("ride state", TaxiRide.class);
+            ValueStateDescriptor<TaxiFare> fStateDescriptor = new ValueStateDescriptor<>("fare state", TaxiFare.class);
+
+            rideState = getRuntimeContext().getState(rStateDescriptor);
+            fareState = getRuntimeContext().getState(fStateDescriptor);
         }
 
         @Override
         public void flatMap1(TaxiRide ride, Collector<RideAndFare> out) throws Exception {
-            throw new MissingSolutionException();
+            TaxiFare taxiFare = fareState.value();
+
+            if (taxiFare == null) {
+                rideState.update(ride);
+            } else {
+                fareState.clear();
+                out.collect(new RideAndFare(ride, taxiFare));
+            }
         }
 
         @Override
         public void flatMap2(TaxiFare fare, Collector<RideAndFare> out) throws Exception {
-            throw new MissingSolutionException();
+            TaxiRide taxiRide = rideState.value();
+
+            if (taxiRide == null) {
+                fareState.update(fare);
+            } else {
+                rideState.clear();
+                out.collect(new RideAndFare(taxiRide, fare));
+            }
         }
     }
 }

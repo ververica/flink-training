@@ -19,15 +19,24 @@
 package org.apache.flink.training.exercises.hourlytips;
 
 import org.apache.flink.api.common.JobExecutionResult;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.functions.AggregateFunction;
+import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.PrintSinkFunction;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
+import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
+import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.training.exercises.common.datatypes.TaxiFare;
 import org.apache.flink.training.exercises.common.sources.TaxiFareGenerator;
-import org.apache.flink.training.exercises.common.utils.MissingSolutionException;
+import org.apache.flink.training.exercises.common.utils.EnvironmentUtils;
+import org.apache.flink.util.Collector;
 
 /**
  * The Hourly Tips exercise from the Flink training.
@@ -58,7 +67,11 @@ public class HourlyTipsExercise {
         HourlyTipsExercise job =
                 new HourlyTipsExercise(new TaxiFareGenerator(), new PrintSinkFunction<>());
 
-        job.execute();
+        job.execute(true);
+    }
+
+    public JobExecutionResult execute () throws Exception {
+        return execute(false);
     }
 
     /**
@@ -67,18 +80,63 @@ public class HourlyTipsExercise {
      * @return {JobExecutionResult}
      * @throws Exception which occurs during job execution.
      */
-    public JobExecutionResult execute() throws Exception {
+    public JobExecutionResult execute(boolean useLocalEnvironment) throws Exception {
 
         // set up streaming execution environment
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamExecutionEnvironment env = EnvironmentUtils.getStreamExecutionEnvironment(useLocalEnvironment);
 
         // start the data generator
-        DataStream<TaxiFare> fares = env.addSource(source);
+        DataStream<TaxiFare> fares = env.addSource(source)
+        .assignTimestampsAndWatermarks(
+            WatermarkStrategy.<TaxiFare>forMonotonousTimestamps()
+            .withTimestampAssigner(
+                (fare, timestamp) -> fare.getEventTimeMillis()));
 
         // replace this with your solution
-        if (true) {
-            throw new MissingSolutionException();
-        }
+        // if (true) {
+        //     throw new MissingSolutionException();
+        // }
+        fares
+        .keyBy(fare -> fare.driverId)
+        .window(TumblingEventTimeWindows.of(Time.hours(1L)))
+        .aggregate(new AggregateFunction<TaxiFare,Float,Float>() {
+
+            @Override
+            public Float createAccumulator() {
+                return 0.0F;
+            }
+
+            @Override
+            public Float add(TaxiFare value, Float accumulator) {
+                return accumulator + value.tip;
+            }
+
+            @Override
+            public Float getResult(Float accumulator) {
+                return accumulator;
+            }
+
+            @Override
+            public Float merge(Float a, Float b) {
+                return a + b;
+            }
+            
+        }, new ProcessWindowFunction<Float, Tuple3<Long, Long, Float>, Long, TimeWindow>() {
+
+            @Override
+            public void process(Long key,
+                    ProcessWindowFunction<Float, Tuple3<Long, Long, Float>, Long, TimeWindow>.Context ctx,
+                    Iterable<Float> tips, Collector<Tuple3<Long, Long, Float>> collector) throws Exception {
+
+                Float totalTip = tips.iterator().next();
+
+                collector.collect(new Tuple3<Long, Long, Float> (ctx.window().getEnd(), key, totalTip));
+            }
+            
+        })
+        .windowAll(TumblingEventTimeWindows.of(Time.hours(1)))
+        .maxBy(2)
+        .addSink(sink);
 
         // the results should be sent to the sink that was passed in
         // (otherwise the tests won't work)

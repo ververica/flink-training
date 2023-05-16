@@ -26,7 +26,10 @@ import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.apache.flink.training.exercises.common.datatypes.TaxiRide;
 import org.apache.flink.training.exercises.common.sources.TaxiRideGenerator;
+import org.apache.flink.training.exercises.common.utils.EnvironmentUtils;
+import org.apache.flink.training.exercises.common.utils.GeoUtils;
 import org.apache.flink.training.exercises.common.utils.MissingSolutionException;
+
 
 /**
  * The Ride Cleansing exercise from the Flink training.
@@ -55,20 +58,23 @@ public class RideCleansingExercise {
         RideCleansingExercise job =
                 new RideCleansingExercise(new TaxiRideGenerator(), new PrintSinkFunction<>());
 
-        job.execute();
+        job.execute(true);
     }
 
+    public JobExecutionResult execute() throws Exception {
+        return execute(false);
+    }
+ 
     /**
      * Creates and executes the long rides pipeline.
      *
      * @return {JobExecutionResult}
      * @throws Exception which occurs during job execution.
      */
-    public JobExecutionResult execute() throws Exception {
+    public JobExecutionResult execute(boolean useLocalEnvironment) throws Exception {
 
-        // set up streaming execution environment
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
+        StreamExecutionEnvironment env = EnvironmentUtils.getStreamExecutionEnvironment(useLocalEnvironment);
+        
         // set up the pipeline
         env.addSource(source).filter(new NYCFilter()).addSink(sink);
 
@@ -80,7 +86,8 @@ public class RideCleansingExercise {
     public static class NYCFilter implements FilterFunction<TaxiRide> {
         @Override
         public boolean filter(TaxiRide taxiRide) throws Exception {
-            throw new MissingSolutionException();
+            // throw new MissingSolutionException();
+            return GeoUtils.isInNYC(taxiRide.startLon, taxiRide.startLat) && GeoUtils.isInNYC(taxiRide.endLon, taxiRide.endLat);
         }
     }
 }
