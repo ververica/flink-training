@@ -141,14 +141,12 @@ public class TroubledStreamingJobSolution1 {
 
         @Override
         public void flatMap(final FakeKafkaRecord kafkaRecord, final Collector<JsonNode> out) {
-            final JsonNode node;
             try {
-                node = deserialize(kafkaRecord.getValue());
+                JsonNode node = deserialize(kafkaRecord.getValue());
+                out.collect(node);
             } catch (IOException e) {
                 numInvalidRecords.inc();
-                return;
             }
-            out.collect(node);
         }
 
         private JsonNode deserialize(final byte[] bytes) throws IOException {
