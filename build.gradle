@@ -24,7 +24,7 @@ description = "Flink Training Exercises"
 
 allprojects {
     group = 'org.apache.flink'
-    version = '1.15-SNAPSHOT'
+    version = '1.17-SNAPSHOT'
 
     apply plugin: 'com.diffplug.spotless'
 
@@ -91,17 +91,14 @@ subprojects {
     }
 
     apply plugin: 'java'
-    if (project.properties['org.gradle.project.enable_scala'].trim() == 'true') {
-        apply plugin: 'scala'
-    }
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: 'checkstyle'
     apply plugin: 'eclipse'
 
     ext {
-        javaVersion = '1.8'
-        flinkVersion = '1.15.3'
-        scalaBinaryVersion = '2.12'
+        javaVersion = '11'
+        flinkVersion = '1.17.1'
+        scalaBinaryVersion = "2.12"
         jacksonVersion = '2.11.2'
         log4jVersion = '2.12.1'
         junitVersion = '4.13'
@@ -135,7 +132,6 @@ subprojects {
         shadow "org.apache.flink:flink-clients:${flinkVersion}"
         shadow "org.apache.flink:flink-java:${flinkVersion}"
         shadow "org.apache.flink:flink-streaming-java:${flinkVersion}"
-        shadow "org.apache.flink:flink-streaming-scala_${scalaBinaryVersion}:${flinkVersion}"
 
         // allows using Flink's web UI when running in the IDE:
         shadow "org.apache.flink:flink-runtime-web:${flinkVersion}"
@@ -153,9 +149,6 @@ subprojects {
     // add solution source dirs:
     sourceSets {
         main.java.srcDirs += 'src/solution/java'
-        tasks.withType(ScalaCompile) {
-            main.scala.srcDirs += 'src/solution/scala'
-        }
 
         // Add shadow configuration to runtime class path so that the
         // dynamically-generated tasks by IntelliJ are able to run and have
@@ -172,20 +165,13 @@ subprojects {
             createTrainingRunTask(project, property)
         }
     }
-    pluginManager.withPlugin('scala') {
-        project.plugins.withId('application') {
-            ['scalaExerciseClassName', 'scalaSolutionClassName'].each { property ->
-                createTrainingRunTask(project, property)
-            }
-        }
-    }
 
     spotless {
         java {
             googleJavaFormat('1.7').aosp()
 
             // \# refers to static imports
-            importOrder('org.apache.flink', 'org.apache.flink.shaded', '', 'javax', 'java', 'scala', '\\#')
+            importOrder('org.apache.flink', 'org.apache.flink.shaded', '', 'javax', 'java', '\\#')
             removeUnusedImports()
 
             targetExclude("**/generated*/**/*.java")
@@ -207,32 +193,6 @@ subprojects {
                     ' * See the License for the specific language governing permissions and\n' +
                     ' * limitations under the License.\n' +
                     ' */\n\n'
-        }
-    }
-
-    pluginManager.withPlugin('scala') {
-        spotless {
-            scala {
-                scalafmt('2.7.5').configFile("${rootProject.projectDir}/.scalafmt.conf")
-
-                licenseHeader '/*\n' +
-                        ' * Licensed to the Apache Software Foundation (ASF) under one\n' +
-                        ' * or more contributor license agreements.  See the NOTICE file\n' +
-                        ' * distributed with this work for additional information\n' +
-                        ' * regarding copyright ownership.  The ASF licenses this file\n' +
-                        ' * to you under the Apache License, Version 2.0 (the\n' +
-                        ' * "License"); you may not use this file except in compliance\n' +
-                        ' * with the License.  You may obtain a copy of the License at\n' +
-                        ' *\n' +
-                        ' *     http://www.apache.org/licenses/LICENSE-2.0\n' +
-                        ' *\n' +
-                        ' * Unless required by applicable law or agreed to in writing, software\n' +
-                        ' * distributed under the License is distributed on an "AS IS" BASIS,\n' +
-                        ' * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n' +
-                        ' * See the License for the specific language governing permissions and\n' +
-                        ' * limitations under the License.\n' +
-                        ' */\n\n', 'package '
-            }
         }
     }
 
