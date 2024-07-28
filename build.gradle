@@ -106,9 +106,10 @@ subprojects {
         log4jVersion = '2.12.1'
         junitVersion = '4.13'
     }
+// removed to make Java 17 work
+//    sourceCompatibility = javaVersion
+//    targetCompatibility = javaVersion
 
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
     }
