@@ -35,6 +35,8 @@ import org.rocksdb.TableFormatConfig;
 
 import java.time.Duration;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 import static org.apache.flink.configuration.ConfigOptions.key;
 import static org.apache.flink.configuration.description.LinkElement.link;
@@ -137,7 +139,13 @@ public class RocksDBTuningJobOptionsFactory implements ConfigurableRocksDBOption
             }
         }
 
-        configuration.getOptional(COMPRESSION).ifPresent(currentOptions::setCompressionType);
+        // Flink 1.19 set compression differently via compression_per_level. This is effectively disabled the
+        // compressionType setting. See: https://github.com/facebook/rocksdb/wiki/Compression.  There seems no way to
+        // unset it. So, we have to call setCompressionPerLevel based on the compressionType setting
+        Optional<CompressionType> compression = configuration.getOptional(COMPRESSION);
+        if (compression.isPresent()) {
+            currentOptions.setCompressionPerLevel(List.of(compression.get()));
+        }
 
         return currentOptions;
     }
