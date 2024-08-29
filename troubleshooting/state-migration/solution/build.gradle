@@ -17,13 +17,14 @@
 
 buildscript {
     repositories {
-        jcenter()
+        gradlePluginPortal()
+        mavenCentral()
     }
     dependencies {
-        classpath "com.commercehub.gradle.plugin:gradle-avro-plugin:0.16.0"
+        classpath "com.github.davidmc24.gradle.plugin:gradle-avro-plugin:1.9.1"
     }
 }
-apply plugin: "com.commercehub.gradle.plugin.avro"
+apply plugin: "com.github.davidmc24.gradle.plugin.avro"
 apply plugin: 'application'
 
 ext.javaExerciseClassName = 'com.ververica.flink.training.exercises.avro.StateMigrationJob'
