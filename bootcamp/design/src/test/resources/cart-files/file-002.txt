@@ -1,0 +1,2 @@
+ShoppingCartRecord{transactionId='T-8301328853686675187', country='MX', transactionCompleted=false, transactionTime=100000000, customerId='C7715', paymentMethod='Zelle', shippingAddress='3276 Park Dr, Georgetown, CO 64746', shippingCost=0.0, couponCode='', items=[]}
+ShoppingCartRecord{transactionId='T-8301328853686675187', country='MX', transactionCompleted=false, transactionTime=100000000, customerId='C7715', paymentMethod='Zelle', shippingAddress='3276 Park Dr, Georgetown, CO 64746', shippingCost=0.0, couponCode='', items=[]}

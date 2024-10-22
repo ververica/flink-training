@@ -1,0 +1,96 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ververica.flink.training.exercises.avro;
+
+import org.apache.flink.api.common.state.ValueState;
+import org.apache.flink.api.common.state.ValueStateDescriptor;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.util.Collector;
+
+import com.ververica.flink.training.common.Measurement;
+import com.ververica.flink.training.exercises.MeasurementAggregationReport;
+import com.ververica.flink.training.exercises.SensorAggregationProcessingBase;
+import com.ververica.flink.training.exercises.StateMigrationJobBase;
+
+/** Process function to report aggregated sensor statistics using Avro-serialized state. */
+public class SensorAggregationProcessing extends SensorAggregationProcessingBase {
+
+    private static final int REPORTING_INTERVAL = 60_000;
+
+    private static final long serialVersionUID = 4123696380484855346L;
+
+    private transient ValueState<AggregatedSensorStatistics> aggregationState;
+
+    @Override
+    public void processElement(
+            Measurement measurement, Context ctx, Collector<MeasurementAggregationReport> out)
+            throws Exception {
+        if (ctx.timestamp() > ctx.timerService().currentWatermark()) {
+            AggregatedSensorStatistics currentStats = aggregationState.value();
+            if (currentStats == null) {
+                currentStats =
+                        AggregatedSensorStatistics.newBuilder()
+                                .setSensorId(measurement.getSensorId())
+                                .build();
+            }
+            currentStats.setCount(currentStats.getCount() + 1);
+            currentStats.setSum(currentStats.getSum() + measurement.getValue());
+
+            // emit once per minute
+            long reportingTime = (ctx.timestamp() / REPORTING_INTERVAL) * REPORTING_INTERVAL;
+            if (reportingTime > ctx.timerService().currentWatermark()) {
+                ctx.timerService().registerEventTimeTimer(reportingTime);
+            }
+
+            aggregationState.update(currentStats);
+        } else {
+            ctx.output(StateMigrationJobBase.LATE_DATA_TAG, measurement);
+        }
+    }
+
+    @Override
+    public void onTimer(
+            long timestamp, OnTimerContext ctx, Collector<MeasurementAggregationReport> out)
+            throws Exception {
+        AggregatedSensorStatistics currentStats = aggregationState.value();
+        currentStats.setLastUpdate(ctx.timestamp());
+
+        MeasurementAggregationReport report = new MeasurementAggregationReport();
+        report.setSensorId(currentStats.getSensorId());
+        report.setCount(currentStats.getCount());
+        report.setAverage(currentStats.getSum() / (double) currentStats.getCount());
+        report.setLatestUpdate(currentStats.getLastUpdate());
+
+        out.collect(report);
+    }
+
+    @Override
+    public void open(Configuration parameters) throws Exception {
+        super.open(parameters);
+
+        final ValueStateDescriptor<AggregatedSensorStatistics> aggregationStateDesc =
+                new ValueStateDescriptor<>("aggregationStats", AggregatedSensorStatistics.class);
+        aggregationState = getRuntimeContext().getState(aggregationStateDesc);
+    }
+
+    @Override
+    public String getStateSerializerName() {
+        return "avro v2";
+    }
+}

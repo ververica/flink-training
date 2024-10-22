@@ -1,0 +1,327 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2' apply false
+    id "com.diffplug.spotless" version "6.25.0" apply false
+}
+
+// Get access to tasks.assemble below
+apply plugin: 'base'
+
+description = "Flink Training Exercises"
+
+// Create a zip of just the required files for students. This excludes
+// the troubleshooting & state-processor projects.
+tasks.register('zipBootcamp', Zip) {
+    archiveFileName = "flink-training-bootcamp.zip"
+    destinationDirectory = layout.buildDirectory
+
+    from(layout.projectDirectory)
+    exclude("**/build")
+    exclude("**/.*")
+    exclude("troubleshooting")
+    exclude("state-processor")
+    exclude("README-troubleshooting.md")
+    exclude("LICENSE")
+}
+
+// Set up so build will create the bootcamp zi file
+tasks.assemble {
+    dependsOn(zipBootcamp)
+}
+
+allprojects {
+    group = 'org.apache.flink'
+    version = '1.19-SNAPSHOT'
+
+    apply plugin: 'com.diffplug.spotless'
+
+    spotless {
+        format 'misc', {
+            target '*.gradle', '*.md', '.gitignore'
+
+            trimTrailingWhitespace()
+            indentWithSpaces(4)
+            endWithNewline()
+        }
+
+        format 'markdown', {
+            target '*.md'
+
+            licenseHeader '<!--\n' +
+                    'Licensed to the Apache Software Foundation (ASF) under one\n' +
+                    'or more contributor license agreements.  See the NOTICE file\n' +
+                    'distributed with this work for additional information\n' +
+                    'regarding copyright ownership.  The ASF licenses this file\n' +
+                    'to you under the Apache License, Version 2.0 (the\n' +
+                    '"License"); you may not use this file except in compliance\n' +
+                    'with the License.  You may obtain a copy of the License at\n' +
+                    '\n' +
+                    '  http://www.apache.org/licenses/LICENSE-2.0\n' +
+                    '\n' +
+                    'Unless required by applicable law or agreed to in writing,\n' +
+                    'software distributed under the License is distributed on an\n' +
+                    '"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n' +
+                    'KIND, either express or implied.  See the License for the\n' +
+                    'specific language governing permissions and limitations\n' +
+                    'under the License.\n' +
+                    '-->\n\n', '(# )|(\\[.*\\]\\(.*\\))'
+
+        }
+
+        format 'gradle', {
+            target '*.gradle'
+
+            licenseHeader '/*\n' +
+                    ' * Licensed to the Apache Software Foundation (ASF) under one or more\n' +
+                    ' * contributor license agreements.  See the NOTICE file distributed with\n' +
+                    ' * this work for additional information regarding copyright ownership.\n' +
+                    ' * The ASF licenses this file to You under the Apache License, Version 2.0\n' +
+                    ' * (the "License"); you may not use this file except in compliance with\n' +
+                    ' * the License.  You may obtain a copy of the License at\n' +
+                    ' *\n' +
+                    ' *      http://www.apache.org/licenses/LICENSE-2.0\n' +
+                    ' *\n' +
+                    ' * Unless required by applicable law or agreed to in writing, software\n' +
+                    ' * distributed under the License is distributed on an "AS IS" BASIS,\n' +
+                    ' * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n' +
+                    ' * See the License for the specific language governing permissions and\n' +
+                    ' * limitations under the License.\n' +
+                    ' */\n\n', '(.*\\{)|(.* = .*)|(apply plugin:)'
+        }
+    }
+}
+
+subprojects {
+    if (project == project(":troubleshooting") || project == project(":bootcamp") || project == project(":troubleshooting:state-migration")) {
+        // this is just an additional grouping layer, not a project!
+        return
+    }
+
+    apply plugin: 'java'
+    apply plugin: 'com.github.johnrengelman.shadow'
+    // apply plugin: 'checkstyle'
+    apply plugin: 'eclipse'
+
+    ext {
+        javaVersion = '17'
+        flinkVersion = '1.19.1'
+        jacksonVersion = '2.11.2'
+        log4jVersion = '2.17.1'
+        junitVersion = '4.13'
+    }
+
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+        jvmArgs '--add-opens=java.base/java.util=ALL-UNNAMED'
+    }
+
+    if (project.parent == project(":bootcamp")) {
+        tasks.register('testSolutions', Test) {
+            group = 'verification'
+            filter { excludeTestsMatching("*.exercises.*") }
+        }
+        tasks.named('test', Test) {
+            filter { includeTestsMatching("*.exercises.*") }
+        }
+    }
+
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
+
+    // declare where to find the dependencies of your project
+    repositories {
+        // for access from China, you may need to uncomment this line
+        // maven { url 'https://maven.aliyun.com/repository/public/' }
+        mavenCentral()
+        maven {
+            url "https://repository.apache.org/content/repositories/snapshots/"
+            mavenContent {
+                snapshotsOnly()
+            }
+        }
+    }
+
+    // common set of dependencies
+    dependencies {
+        if (project.parent.name == 'bootcamp') {
+            implementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+            implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+            implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+
+            implementation "org.apache.flink:flink-clients:${flinkVersion}"
+            implementation "org.apache.flink:flink-java:${flinkVersion}"
+            implementation "org.apache.flink:flink-streaming-java:${flinkVersion}"
+
+            // allows using Flink's web UI when running in the IDE:
+            implementation "org.apache.flink:flink-runtime-web:${flinkVersion}"
+            // allow using RocksDB when running in the IDE:
+            implementation "org.apache.flink:flink-statebackend-rocksdb:${flinkVersion}"
+        } else {
+            shadow "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+            shadow "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+            shadow "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+
+            shadow "org.apache.flink:flink-clients:${flinkVersion}"
+            shadow "org.apache.flink:flink-java:${flinkVersion}"
+            shadow "org.apache.flink:flink-streaming-java:${flinkVersion}"
+
+            // allows using Flink's web UI when running in the IDE:
+            shadow "org.apache.flink:flink-runtime-web:${flinkVersion}"
+            // allow using RocksDB when running in the IDE:
+            shadow "org.apache.flink:flink-statebackend-rocksdb:${flinkVersion}"
+        }
+
+        // common set for testing
+        testImplementation "junit:junit:${junitVersion}"
+        testImplementation "org.apache.flink:flink-streaming-java:${flinkVersion}:tests"
+        testImplementation "org.apache.flink:flink-runtime:${flinkVersion}:tests"
+        testImplementation "org.apache.flink:flink-test-utils-junit:${flinkVersion}"
+        testImplementation "org.apache.flink:flink-test-utils:${flinkVersion}"
+    }
+
+    // add solution source dirs:
+    sourceSets {
+        main.java.srcDirs += 'src/solution/java'
+
+        // Add shadow configuration to runtime class path so that the
+        // dynamically-generated tasks by IntelliJ are able to run and have
+        // all dependencies they need. (Luckily, this does not influence what
+        // ends up in the final shadowJar.)
+        main.runtimeClasspath += configurations.shadow
+
+        test.compileClasspath += configurations.shadow
+        test.runtimeClasspath += configurations.shadow
+    }
+
+    project.plugins.withId('application') {
+        ['javaExerciseClassName', 'javaSolutionClassName'].each { property ->
+            createTrainingRunTask(project, property)
+        }
+    }
+
+    spotless {
+        java {
+            googleJavaFormat().aosp()
+
+            // \# refers to static imports
+            importOrder('org.apache.flink', 'org.apache.flink.shaded', '', 'javax', 'java', '\\#')
+            removeUnusedImports()
+
+            targetExclude("**/generated*/**/*.java")
+
+            licenseHeader '/*\n' +
+                    ' * Licensed to the Apache Software Foundation (ASF) under one\n' +
+                    ' * or more contributor license agreements.  See the NOTICE file\n' +
+                    ' * distributed with this work for additional information\n' +
+                    ' * regarding copyright ownership.  The ASF licenses this file\n' +
+                    ' * to you under the Apache License, Version 2.0 (the\n' +
+                    ' * "License"); you may not use this file except in compliance\n' +
+                    ' * with the License.  You may obtain a copy of the License at\n' +
+                    ' *\n' +
+                    ' *     http://www.apache.org/licenses/LICENSE-2.0\n' +
+                    ' *\n' +
+                    ' * Unless required by applicable law or agreed to in writing, software\n' +
+                    ' * distributed under the License is distributed on an "AS IS" BASIS,\n' +
+                    ' * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n' +
+                    ' * See the License for the specific language governing permissions and\n' +
+                    ' * limitations under the License.\n' +
+                    ' */\n\n'
+        }
+    }
+
+    jar {
+        manifest {
+            attributes 'Built-By': System.getProperty('user.name'),
+                    'Build-Jdk': System.getProperty('java.version')
+        }
+    }
+
+    if (project.parent.name != 'bootcamp') {
+        shadowJar {
+            mergeServiceFiles()
+            dependencies {
+                exclude(dependency("org.apache.flink:force-shading"))
+                exclude(dependency('com.google.code.findbugs:jsr305'))
+                exclude(dependency('org.slf4j:.*'))
+                exclude(dependency('log4j:.*'))
+                exclude(dependency('org.apache.logging.log4j:log4j-to-slf4j'))
+                // already provided dependencies from serializer frameworks
+                exclude(dependency('com.esotericsoftware.kryo:kryo'))
+                exclude(dependency('javax.servlet:servlet-api')) // TODO: check if needed
+                exclude(dependency('org.apache.httpcomponents:httpclient')) // TODO: check if needed
+            }
+            if (project.parent != rootProject) {
+                archiveBaseName.set("${project.parent.name}-${project.name}")
+            }
+        }
+
+        tasks.assemble {
+            dependsOn(shadowJar)
+        }
+    }
+
+    // add FLINK_TRAINING_LOCAL to the environment variables if run via gradle
+    tasks.matching({ task -> task instanceof JavaExec }).all {
+        environment "FLINK_TRAINING_LOCAL", "1"
+    }
+}
+
+tasks.register('printRunTasks') {
+    doLast {
+        println '------------------------------------------------------------'
+        println 'Flink Training Tasks runnable from root project \'' + project.name + '\''
+        println '------------------------------------------------------------'
+
+        subprojects.findAll { project ->
+            boolean first = true;
+            project.tasks.withType(JavaExec) { task ->
+                if (task.group == 'flink-training-bootcamp') {
+                    if (first) {
+                        println ''
+                        println '> Subproject \'' + project.name + '\''
+                        first = false;
+                    }
+                    println './gradlew ' + project.path + ':' + task.name
+                }
+            }
+        }
+    }
+}
+
+
+static def void createTrainingRunTask(Project project, String property) {
+    if (project.ext.has(property)) {
+        project.tasks.create(name: classNamePropertyToTaskName(property), type: JavaExec) {
+            classpath = project.sourceSets.main.runtimeClasspath
+            mainClass = project.ext.get(property)
+            jvmArgs = ['--add-opens=java.base/java.util=ALL-UNNAMED']
+            group = 'flink-training-bootcamp'
+        }
+    }
+}
+
+static def String classNamePropertyToTaskName(String property) {
+    return 'run' +
+            property.charAt(0).toString().toUpperCase() +
+            property.substring(1, property.lastIndexOf('ClassName'))
+
+}
