@@ -29,3 +29,7 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     api "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
 }
+
+tasks.jar {
+    archiveBaseName = "${project.parent.name}-${project.name}"
+}

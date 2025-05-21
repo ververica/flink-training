@@ -33,3 +33,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
 }
+
+sourceSets {
+    main.java.srcDirs += 'src/provided/java'
+}
