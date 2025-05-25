@@ -40,13 +40,13 @@ be installed on your system:
 
 ### Clone and build the flink-training-bootcamp project
 
-The `ff-2024` branch in the `flink-training` repo in GitHub contains exercises, tests, and reference solutions for 
+The `master-2025` branch in the `flink-training` repo in GitHub contains exercises, tests, and reference solutions for 
 the programming exercises. To get started, you need to:
 
 ```bash
 git clone https://github.com/ververica/flink-training
 cd flink-training
-git checkout ff-2024
+git checkout master-2025
 ./gradlew clean testSolutions
 ```
 
@@ -83,8 +83,8 @@ settings, select "Preview" from the "Default Layout" popup menu.
 
 ### Flink JavaDoc
 
-The Java documentation for Flink 1.19 is located [here](https://nightlies.apache.org/flink/flink-docs-release-1.19/api/java/)
-You can ignore the `1.19-SNAPSHOT` version at the top of the main page, this documentation is for the
+The Java documentation for Flink 1.20 is located [here](https://nightlies.apache.org/flink/flink-docs-release-1.20/api/java/)
+You can ignore the `1.20-SNAPSHOT` version at the top of the main page, this documentation is for the
 released version.
 
 ## How to do the lab exercises
